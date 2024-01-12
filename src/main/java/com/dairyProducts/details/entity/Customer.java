@@ -24,8 +24,11 @@ public class Customer {
     @Column(name = "mobileNo")
     private long mobileNo;
 
+    @Column(name="pending_amount")
+    private Double pendingAmount;
     @Column(name = "defaulter")
     private String defaulter = "N";
+
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Milk> milkList;
     public Customer() {
@@ -88,12 +91,35 @@ public class Customer {
         this.defaulter = defaulter;
     }
 
+    public Double getPendingAmount() {
+        return pendingAmount;
+    }
+
+    public void setPendingAmount(Double pendingAmount) {
+        this.pendingAmount = pendingAmount;
+    }
+
     public List<Milk> getMilkList() {
         return milkList;
     }
 
     public void setMilkList(List<Milk> milkList) {
         this.milkList = milkList;
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "cardNumber=" + cardNumber +
+                ", customerName='" + customerName + '\'' +
+                ", addressLine1='" + addressLine1 + '\'' +
+                ", addressLine2='" + addressLine2 + '\'' +
+                ", area=" + area +
+                ", mobileNo=" + mobileNo +
+                ", defaulter='" + defaulter + '\'' +
+                ", pendingAmount=" + pendingAmount +
+                ", milkList=" + milkList +
+                '}';
     }
 }
 

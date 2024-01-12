@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -18,27 +19,24 @@ public class Milk {
     @Column(name = "quantity")
     private double quantity;
 
-    @Column(name = "price")
-    private double price = 50.0;
+    @Column(name = "unit_Price")
+    private double unitPrice = 50.0;
 
-    @Column(name = "created_date")
+    @Column(name = "purchased_date")
     @CreationTimestamp
-    private LocalDateTime createdDate;
+    private LocalDateTime purchasedDate;
 
     @Column(name = "updated_date")
     @UpdateTimestamp
     private LocalDateTime updatedDate;
 
+    @Column(name = "total_Price")
+    private double totalPrice;
+
     @ManyToOne
     @JoinColumn(name = "card_number", referencedColumnName = "card_number")
+    @JsonIgnore
     private Customer customer;
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
 
     public Milk() {
 
@@ -60,20 +58,20 @@ public class Milk {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
-        return price;
+    public double getUnitPrice() {
+        return unitPrice;
     }
 
-    public void setPrice(double price) {
-        this.price = price;
+    public void setUnitPrice(double unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
+    public LocalDateTime getPurchasedDate() {
+        return purchasedDate;
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
-        this.createdDate = createdDate;
+    public void setPurchasedDate(LocalDateTime purchasedDate) {
+        this.purchasedDate = purchasedDate;
     }
 
     public LocalDateTime getUpdatedDate() {
@@ -84,14 +82,31 @@ public class Milk {
         this.updatedDate = updatedDate;
     }
 
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
     @Override
     public String toString() {
         return "Milk{" +
                 "id=" + id +
                 ", quantity=" + quantity +
-                ", price=" + price +
-                ", createdDate=" + createdDate +
+                ", unitPrice=" + unitPrice +
+                ", purchasedDate=" + purchasedDate +
                 ", updatedDate=" + updatedDate +
+                ", totalPrice=" + totalPrice +
                 ", customer=" + customer +
                 '}';
     }

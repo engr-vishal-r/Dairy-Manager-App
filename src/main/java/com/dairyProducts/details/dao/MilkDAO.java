@@ -5,7 +5,7 @@ import com.dairyProducts.details.repository.MilkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public class MilkDAO {
@@ -13,8 +13,8 @@ public class MilkDAO {
     @Autowired
     MilkRepository milkRepo;
 
-    public Optional<Milk> getMilkDetailsDao(long cardNumber) {
-        return milkRepo.findByCardNumber(cardNumber);
+    public List<Milk> getMilkDetailsDao(long cardNumber) {
+        return milkRepo.findByCustomerCardNumber(cardNumber);
     }
 
     public String addMilkDetailsDao(Milk milk) {

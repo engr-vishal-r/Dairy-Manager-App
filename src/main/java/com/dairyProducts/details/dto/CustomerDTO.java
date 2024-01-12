@@ -26,6 +26,9 @@ public class CustomerDTO {
     @Column(name = "defaulter")
     private String defaulter = "N";
 
+    @Column(name="pending_amount")
+    private Double pendingAmount;
+
     public long getCardNumber() {
         return cardNumber;
     }
@@ -80,5 +83,27 @@ public class CustomerDTO {
 
     public void setDefaulter(String defaulter) {
         this.defaulter = defaulter;
+    }
+
+    public Double getPendingAmount() {
+        return pendingAmount;
+    }
+
+    public void setPendingAmount(Double pendingAmount) {
+        this.pendingAmount = pendingAmount;
+    }
+
+    @Override
+    public String toString() {
+        return "CustomerDTO{" +
+                "cardNumber=" + cardNumber +
+                ", customerName='" + customerName + '\'' +
+                ", addressLine1='" + addressLine1 + '\'' +
+                ", addressLine2='" + addressLine2 + '\'' +
+                ", area=" + area +
+                ", mobileNo=" + mobileNo +
+                ", defaulter='" + defaulter + '\'' +
+                ", pendingAmount=" + pendingAmount +
+                '}';
     }
 }

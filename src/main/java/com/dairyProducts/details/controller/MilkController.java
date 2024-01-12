@@ -1,6 +1,9 @@
 package com.dairyProducts.details.controller;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.dairyProducts.details.dto.MilkDTO;
 import com.dairyProducts.details.service.MilkService;
@@ -28,15 +31,11 @@ public class MilkController {
         return milkService.addMilkDetailsService(milkDTO);
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{cardNumber}")
     public ResponseEntity<?> getMilkDetails(@PathVariable long cardNumber) {
-        Optional<Milk> milk = milkService.getMilkDetailsService(cardNumber);
-        if (milk.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found for cardNumber: " + cardNumber);
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body(milk);
+       return milkService.getMilkDetailsService(cardNumber);
         }
-    }
+
 
     @PutMapping(value = "/update")
     public ResponseEntity<String> updateMilkDetails(@Valid @RequestBody MilkDTO milkDTO) {

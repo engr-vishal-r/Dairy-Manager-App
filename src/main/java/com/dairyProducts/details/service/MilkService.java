@@ -2,6 +2,7 @@ package com.dairyProducts.details.service;
 
 import com.dairyProducts.details.dao.MilkDAO;
 import com.dairyProducts.details.dto.MilkDTO;
+import com.dairyProducts.details.dto.MilkWithCustomerDTO;
 import com.dairyProducts.details.entity.Customer;
 import com.dairyProducts.details.entity.Milk;
 import com.dairyProducts.details.repository.CustomerRepository;
@@ -12,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class MilkService {
@@ -31,10 +34,32 @@ public class MilkService {
         this.milkRepository = milkRepository;
     }
 
-    public Optional<Milk> getMilkDetailsService(long cardNumber) {
+    public ResponseEntity<?> getMilkDetailsService(long cardNumber) {
+        List<Milk> milkList = milkRepository.findByCustomerCardNumber(cardNumber);
 
-        return milkDao.getMilkDetailsDao(cardNumber);
+        if (milkList.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for cardNumber: " + cardNumber);
+        } else {
+            // Calculate and set the total price for each Milk entity
+            double totalPendingAmount = milkList.stream()
+                    .mapToDouble(milk -> milk.getQuantity() * milk.getUnitPrice())
+                    .sum();
 
+            Customer customer = customerRepo.findByCardNumber(cardNumber)
+                    .orElseThrow(() -> new RuntimeException("Customer not found for cardNumber: " + cardNumber));
+
+            // Update the total pending amount in Customer entity
+            customer.setPendingAmount(totalPendingAmount);
+            customerRepo.save(customer);
+
+            MilkWithCustomerDTO milkWithCustomerDTO = new MilkWithCustomerDTO();
+            milkWithCustomerDTO.setMilkList(milkList);
+            milkWithCustomerDTO.setCardNumber(customer.getCardNumber());
+            milkWithCustomerDTO.setCustomerName(customer.getCustomerName());
+            milkWithCustomerDTO.setPendingAmount(customer.getPendingAmount());
+
+            return ResponseEntity.status(HttpStatus.OK).body(milkWithCustomerDTO);
+        }
     }
 
     public ResponseEntity<String> addMilkDetailsService(MilkDTO milkDTO) {
@@ -42,13 +67,11 @@ public class MilkService {
         if (milkDTO.getCustomer() == null || milkDTO.getCustomer().getCardNumber() == 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Card Number is mandatory to add details");
         }
-
         // Check if card number exists in the database
         Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(milkDTO.getCustomer().getCardNumber());
         if (existingCustomerOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found in the database for the given card number");
         }
-
         Milk milk = new Milk();
         milk.setQuantity(milkDTO.getQuantity());
         milk.setCustomer(existingCustomerOptional.get());
@@ -59,13 +82,14 @@ public class MilkService {
         }
 
         // Calculate total price
-        double totalPrice = milk.getPrice() * milk.getQuantity();
-        milk.setPrice(totalPrice);
+        double totalPrice = milk.getUnitPrice() * milk.getQuantity();
+        milk.setTotalPrice(totalPrice);
 
         // Save the milk details
         milkRepository.save(milk);
         return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database");
     }
+
     public ResponseEntity<String> updateMilkDetailsService(MilkDTO milkDTO) {
 
         Milk milk = new Milk();
@@ -81,8 +105,8 @@ public class MilkService {
             // Update fields only if they are present in the DTO
             if (milkDTO.getQuantity() != 0) {
                 existingMilk.setQuantity(milkDTO.getQuantity());
-                double totalPrice = milk.getPrice() * existingMilk.getQuantity();
-                existingMilk.setPrice(totalPrice);
+                double totalPrice = milk.getUnitPrice() * existingMilk.getQuantity();
+                existingMilk.setTotalPrice(totalPrice);
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is mandatory for updating details.");
             }
