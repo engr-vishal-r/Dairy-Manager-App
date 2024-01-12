@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="milkService" class="com.dairyProducts.details.service.MilkService">
+        <property name="master" ref="milk" />
+        <property name="pricePerLitre" value="50" />
+    </bean>
+    <bean id="curdService" class="com.dairyProducts.details.service.CurdService">
+        <property name="master" ref="curd" />
+        <property name="pricePerLitre" value="60" />
+    </bean>
+
+</beans>
+
