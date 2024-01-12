@@ -42,6 +42,7 @@ public class MilkService {
         } else {
             // Calculate and set the total price for each Milk entity
             double totalPendingAmount = milkList.stream()
+                    .filter(milk -> "N".equalsIgnoreCase(milk.getPaid()))
                     .mapToDouble(milk -> milk.getQuantity() * milk.getUnitPrice())
                     .sum();
 
@@ -50,6 +51,12 @@ public class MilkService {
 
             // Update the total pending amount in Customer entity
             customer.setPendingAmount(totalPendingAmount);
+            // Check if total pending amount exceeds 10000 and update defaulter column
+            if (totalPendingAmount >= 10000) {
+                customer.setDefaulter("Y");
+            } else {
+                customer.setDefaulter("N");
+            }
             customerRepo.save(customer);
 
             MilkWithCustomerDTO milkWithCustomerDTO = new MilkWithCustomerDTO();

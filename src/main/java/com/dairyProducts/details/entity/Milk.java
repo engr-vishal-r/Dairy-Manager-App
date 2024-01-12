@@ -33,6 +33,9 @@ public class Milk {
     @Column(name = "total_Price")
     private double totalPrice;
 
+    @Column(name = "paid")
+    private String paid="N";
+
     @ManyToOne
     @JoinColumn(name = "card_number", referencedColumnName = "card_number")
     @JsonIgnore
@@ -98,6 +101,14 @@ public class Milk {
         this.customer = customer;
     }
 
+    public String getPaid() {
+        return paid;
+    }
+
+    public void setPaid(String paid) {
+        this.paid = paid;
+    }
+
     @Override
     public String toString() {
         return "Milk{" +
@@ -108,6 +119,7 @@ public class Milk {
                 ", updatedDate=" + updatedDate +
                 ", totalPrice=" + totalPrice +
                 ", customer=" + customer +
+                ", paid=" + paid +
                 '}';
     }
 }
