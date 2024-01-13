@@ -46,4 +46,14 @@ public class MilkWithCustomerDTO {
     public void setCustomerName(String customerName) {
         this.customerName = customerName;
     }
+
+    @Override
+    public String toString() {
+        return "MilkWithCustomerDTO{" +
+                "milkList=" + milkList +
+                ", pendingAmount=" + pendingAmount +
+                ", cardNumber=" + cardNumber +
+                ", customerName='" + customerName + '\'' +
+                '}';
+    }
 }

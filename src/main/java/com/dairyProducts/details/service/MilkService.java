@@ -70,32 +70,51 @@ public class MilkService {
     }
 
     public ResponseEntity<String> addMilkDetailsService(MilkDTO milkDTO) {
+        Customer customer = new Customer();
         // Check if customer is provided
         if (milkDTO.getCustomer() == null || milkDTO.getCustomer().getCardNumber() == 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Card Number is mandatory to add details");
         }
+
         // Check if card number exists in the database
         Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(milkDTO.getCustomer().getCardNumber());
         if (existingCustomerOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found in the database for the given card number");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No details found in the database for the given card number");
         }
-        Milk milk = new Milk();
-        milk.setQuantity(milkDTO.getQuantity());
-        milk.setCustomer(existingCustomerOptional.get());
 
-        // Check if quantity is provided
-        if (milkDTO.getQuantity() == 0) {
+        Customer existingCustomer = existingCustomerOptional.get();
+
+        // Check the eligibility to purchase milk
+        if (existingCustomer.getDefaulter().equals("Y")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Customer has pending dues :" + existingCustomer.getPendingAmount());
+        } else if (milkDTO.getQuantity() == 0) { // Check if quantity is provided
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is mandatory to add details");
+        } else {
+            // Create new Milk instance
+            Milk milk = new Milk();
+            milk.setQuantity(milkDTO.getQuantity());
+            milk.setCustomer(existingCustomer);
+
+            // Calculate total price
+            double totalPrice = milk.getUnitPrice() * milk.getQuantity();
+            milk.setTotalPrice(totalPrice);
+
+            // Save the milk details
+            milkRepository.save(milk);
+            //update customer table with pending amount details
+            existingCustomer.setPendingAmount(existingCustomer.getPendingAmount() + totalPrice);
+            customerRepo.save(existingCustomer);
+
+            // Check if the pending amount exceeds 10000 and update isDefaulter field
+            existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= 10000 ? "Y" : "N");
+            customerRepo.save(existingCustomer);
+
+            return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database");
         }
-
-        // Calculate total price
-        double totalPrice = milk.getUnitPrice() * milk.getQuantity();
-        milk.setTotalPrice(totalPrice);
-
-        // Save the milk details
-        milkRepository.save(milk);
-        return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database");
     }
+
 
     public ResponseEntity<String> updateMilkDetailsService(MilkDTO milkDTO) {
 
