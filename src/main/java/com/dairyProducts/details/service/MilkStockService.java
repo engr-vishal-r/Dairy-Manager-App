@@ -40,6 +40,7 @@ public class MilkStockService {
         MilkStock milkStock = new MilkStock();
         milkStock.setLoadedQuantity(milkStockDTO.getLoadedQuantity());
         milkStock.setEmployeeId(milkStockDTO.getEmployeeId());
+        milkStock.setBalanceQuantity(milkStockDTO.getLoadedQuantity());
         String quantity = Integer.toString((int) milkStockDTO.getLoadedQuantity());
 
         if(milkStockDTO.getEmployeeId().isEmpty() || !milkStockDTO.getEmployeeId().matches("[0-9]{6}")){

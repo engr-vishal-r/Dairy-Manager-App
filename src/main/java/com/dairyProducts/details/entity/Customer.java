@@ -25,7 +25,7 @@ public class Customer {
     private long mobileNo;
 
     @Column(name="pending_amount")
-    private Double pendingAmount;
+    private Double pendingAmount=0.0;
     @Column(name = "defaulter")
     private String defaulter = "N";
 

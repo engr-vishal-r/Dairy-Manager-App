@@ -5,8 +5,10 @@ import com.dairyProducts.details.dto.MilkDTO;
 import com.dairyProducts.details.dto.MilkWithCustomerDTO;
 import com.dairyProducts.details.entity.Customer;
 import com.dairyProducts.details.entity.Milk;
+import com.dairyProducts.details.entity.MilkStock;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.repository.MilkRepository;
+import com.dairyProducts.details.repository.MilkStockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,8 @@ public class MilkService {
     MilkDTO milkDTO;
     @Autowired
     private MilkRepository milkRepo;
+    @Autowired
+    private MilkStockRepository milkStockRepo;
 
     @Autowired
     private CustomerRepository customerRepo;
@@ -65,6 +69,7 @@ public class MilkService {
             return ResponseEntity.status(HttpStatus.OK).body(milkWithCustomerDTO);
         }
     }
+
     @Transactional
     public ResponseEntity<String> addMilkDetailsService(MilkDTO milkDTO) {
         Customer customer = new Customer();
@@ -98,15 +103,29 @@ public class MilkService {
             double totalPrice = milk.getUnitPrice() * milk.getQuantity();
             milk.setTotalPrice(totalPrice);
 
+            // Check if there is sufficient balance quantity in the milk stock
+            double purchasedQuantity = milkDTO.getQuantity();
+            double remainingBalanceQuantity = updateMilkStockBalanceQuantity(purchasedQuantity);
+
+            System.out.println("Remaining balance quantity: " + remainingBalanceQuantity);
+            if (remainingBalanceQuantity < 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Milk stock is not available");
+            }
+
+            // Update customer table with pending amount details
+            if (existingCustomer.getPendingAmount() == null) {
+                existingCustomer.setPendingAmount(0.0); // Set a default value if it's null
+            }
             // Save the milk details
             milkRepo.save(milk);
             System.out.println("Milk details updated successfully.");
-            //update customer table with pending amount details
+            // Update customer table with pending amount details
             existingCustomer.setPendingAmount(existingCustomer.getPendingAmount() + totalPrice);
             existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= 10000 ? "Y" : "N");
             customerRepo.save(existingCustomer);
             System.out.println("Customer details updated successfully.");
-            return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database");
+
+            return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database. Remaining Balance Quantity: " + remainingBalanceQuantity);
         }
     }
 
@@ -167,23 +186,42 @@ public class MilkService {
         }
     }
 
-    public ResponseEntity<String> deleteMilkDetailsService (@PathVariable(required = false) Integer id){
+    public ResponseEntity<String> deleteMilkDetailsService(@PathVariable(required = false) Integer id) {
 
-            if (id == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is required to delete details.");
-            }
+        if (id == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is required to delete details.");
+        }
 
-            Optional<Milk> existingMilkOptional = milkRepo.findById(id);
+        Optional<Milk> existingMilkOptional = milkRepo.findById(id);
 
-            if (existingMilkOptional.isPresent()) {
-                Milk existingMilk = existingMilkOptional.get();
-                milkRepo.delete(existingMilk);
-                return ResponseEntity.status(HttpStatus.OK).body("Details deleted successfully");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database");
-            }
+        if (existingMilkOptional.isPresent()) {
+            Milk existingMilk = existingMilkOptional.get();
+            milkRepo.delete(existingMilk);
+            return ResponseEntity.status(HttpStatus.OK).body("Details deleted successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database");
         }
     }
+
+    private double updateMilkStockBalanceQuantity(double purchasedQuantity) {
+        MilkStock milkStock = milkStockRepo.findTopByOrderByLoadedDateDesc();
+
+        if (milkStock != null) {
+            double remainingBalanceQuantity = milkStock.getBalanceQuantity() - purchasedQuantity;
+
+            // Check if there is sufficient balance quantity
+            if (remainingBalanceQuantity >= 0) {
+                milkStock.setBalanceQuantity(remainingBalanceQuantity);
+                milkStockRepo.save(milkStock);
+                return remainingBalanceQuantity;
+            } else {
+                return -0.1; // Indicates insufficient balance quantity
+            }
+        } else {
+            return -0.1; // Handle the case where there is no MilkStock record
+        }
+    }
+}
 
 
 
