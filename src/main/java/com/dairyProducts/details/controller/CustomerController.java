@@ -41,8 +41,8 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.OK).body(customer);
         }
     }
-    @PutMapping(value = "/update")
-    public ResponseEntity<String> updateCustomerDetails(@Valid @RequestBody CustomerDTO customerDTO) {
+    @PutMapping(value = "/{cardNumber}")
+    public ResponseEntity<String> updateCustomerDetails(@PathVariable long cardNumber, @Valid @RequestBody CustomerDTO customerDTO) {
         return customerService.updateCustomerDetailsService(customerDTO);
 
     }

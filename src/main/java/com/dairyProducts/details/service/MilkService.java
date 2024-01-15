@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class MilkService {
@@ -26,17 +25,17 @@ public class MilkService {
     @Autowired
     MilkDTO milkDTO;
     @Autowired
-    private MilkRepository milkRepository;
+    private MilkRepository milkRepo;
 
     @Autowired
     private CustomerRepository customerRepo;
 
-    public MilkService(MilkRepository milkRepository) {
-        this.milkRepository = milkRepository;
+    public MilkService(MilkRepository milkRepo) {
+        this.milkRepo = milkRepo;
     }
 
     public ResponseEntity<?> getMilkDetailsService(long cardNumber) {
-        List<Milk> milkList = milkRepository.findByCustomerCardNumber(cardNumber);
+        List<Milk> milkList = milkRepo.findByCustomerCardNumber(cardNumber);
 
         if (milkList.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for cardNumber: " + cardNumber);
@@ -66,7 +65,7 @@ public class MilkService {
             return ResponseEntity.status(HttpStatus.OK).body(milkWithCustomerDTO);
         }
     }
-
+    @Transactional
     public ResponseEntity<String> addMilkDetailsService(MilkDTO milkDTO) {
         Customer customer = new Customer();
         // Check if customer is provided
@@ -100,7 +99,7 @@ public class MilkService {
             milk.setTotalPrice(totalPrice);
 
             // Save the milk details
-            milkRepository.save(milk);
+            milkRepo.save(milk);
             System.out.println("Milk details updated successfully.");
             //update customer table with pending amount details
             existingCustomer.setPendingAmount(existingCustomer.getPendingAmount() + totalPrice);
@@ -117,7 +116,7 @@ public class MilkService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is mandatory for updating details.");
         }
 
-        Optional<Milk> existingMilkOptional = milkRepository.findById(milkDTO.getId());
+        Optional<Milk> existingMilkOptional = milkRepo.findById(milkDTO.getId());
 
         if (existingMilkOptional.isPresent()) {
             Milk existingMilk = existingMilkOptional.get();
@@ -159,7 +158,7 @@ public class MilkService {
             }
 
             // Save the updated entity back to the database
-            milkRepository.save(existingMilk);
+            milkRepo.save(existingMilk);
 
             System.out.println("Milk details updated successfully.");
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully updated in the database");
@@ -174,11 +173,11 @@ public class MilkService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is required to delete details.");
             }
 
-            Optional<Milk> existingMilkOptional = milkRepository.findById(id);
+            Optional<Milk> existingMilkOptional = milkRepo.findById(id);
 
             if (existingMilkOptional.isPresent()) {
                 Milk existingMilk = existingMilkOptional.get();
-                milkRepository.delete(existingMilk);
+                milkRepo.delete(existingMilk);
                 return ResponseEntity.status(HttpStatus.OK).body("Details deleted successfully");
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database");

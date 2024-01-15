@@ -26,8 +26,8 @@ public class MilkController {
     @Autowired
     private MilkDTO milkDTO;
 
-    @PostMapping(value = "/add")
-    public ResponseEntity<String> addMilk(@Valid @RequestBody MilkDTO milkDTO) {
+    @PostMapping(value = "/{cardNumber}")
+    public ResponseEntity<String> addMilk(@PathVariable long cardNumber, @RequestBody MilkDTO milkDTO) {
         return milkService.addMilkDetailsService(milkDTO);
     }
 
@@ -37,8 +37,8 @@ public class MilkController {
         }
 
 
-    @PutMapping(value = "/update")
-    public ResponseEntity<String> updateMilkDetails(@Valid @RequestBody MilkDTO milkDTO) {
+    @PutMapping(value = "/{cardNumber}")
+    public ResponseEntity<String> updateMilkDetails(@PathVariable long cardNumber, @RequestBody MilkDTO milkDTO) {
         return milkService.updateMilkDetailsService(milkDTO);
 
     }
