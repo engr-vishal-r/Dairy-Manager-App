@@ -47,7 +47,7 @@ public class CustomerController {
 
     }
 
-    @DeleteMapping(value = "/delete/{cardNumber}")
+    @DeleteMapping(value = "/{cardNumber}")
     public ResponseEntity<String> deleteCustomerDetails(@PathVariable long cardNumber) {
 
         return customerService.deleteCustomerDetailsService(cardNumber);

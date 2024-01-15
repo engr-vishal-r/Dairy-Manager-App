@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface MilkRepository extends JpaRepository<Milk, Integer> {
     List<Milk> findByCustomerCardNumber(long cardNumber);
+
+    Optional<Milk> findById(int id);
 }
 
 

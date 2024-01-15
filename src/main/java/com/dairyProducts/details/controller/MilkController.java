@@ -43,7 +43,7 @@ public class MilkController {
 
     }
 
-    @DeleteMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "/{id}")
     public ResponseEntity<String> deleteMilkDetails(@PathVariable int id) {
 
         return milkService.deleteMilkDetailsService(id);

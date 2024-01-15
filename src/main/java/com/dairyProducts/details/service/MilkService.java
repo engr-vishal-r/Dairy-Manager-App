@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
@@ -52,12 +53,9 @@ public class MilkService {
             // Update the total pending amount in Customer entity
             customer.setPendingAmount(totalPendingAmount);
             // Check if total pending amount exceeds 10000 and update defaulter column
-            if (totalPendingAmount >= 10000) {
-                customer.setDefaulter("Y");
-            } else {
-                customer.setDefaulter("N");
-            }
+            customer.setDefaulter(customer.getPendingAmount() >= 10000 ? "Y" : "N");
             customerRepo.save(customer);
+            System.out.println("Customer details updated successfully.");
 
             MilkWithCustomerDTO milkWithCustomerDTO = new MilkWithCustomerDTO();
             milkWithCustomerDTO.setMilkList(milkList);
@@ -103,22 +101,18 @@ public class MilkService {
 
             // Save the milk details
             milkRepository.save(milk);
+            System.out.println("Milk details updated successfully.");
             //update customer table with pending amount details
             existingCustomer.setPendingAmount(existingCustomer.getPendingAmount() + totalPrice);
-            customerRepo.save(existingCustomer);
-
-            // Check if the pending amount exceeds 10000 and update isDefaulter field
             existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= 10000 ? "Y" : "N");
             customerRepo.save(existingCustomer);
-
+            System.out.println("Customer details updated successfully.");
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database");
         }
     }
 
-
+    @Transactional
     public ResponseEntity<String> updateMilkDetailsService(MilkDTO milkDTO) {
-
-        Milk milk = new Milk();
         if (milkDTO.getId() == 0) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is mandatory for updating details.");
         }
@@ -127,47 +121,70 @@ public class MilkService {
 
         if (existingMilkOptional.isPresent()) {
             Milk existingMilk = existingMilkOptional.get();
+            double existingTotalAmount = existingMilk.getTotalPrice();
 
             // Update fields only if they are present in the DTO
             if (milkDTO.getQuantity() != 0) {
                 existingMilk.setQuantity(milkDTO.getQuantity());
-                double totalPrice = milk.getUnitPrice() * existingMilk.getQuantity();
+                double totalPrice = existingMilk.getUnitPrice() * existingMilk.getQuantity();
                 existingMilk.setTotalPrice(totalPrice);
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is mandatory for updating details.");
+
+                // Update pending amount in customer table
+                Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(existingMilk.getCustomer().getCardNumber());
+                if (existingCustomerOptional.isPresent()) {
+                    Customer existingCustomer = existingCustomerOptional.get();
+
+                    // Check if payment is marked as "Y"
+                    if (milkDTO.getPaid() != null && milkDTO.getPaid().equals("Y")) {
+                        double newPendingAmountAfterPayment = existingCustomer.getPendingAmount() - existingTotalAmount;
+                        existingCustomer.setPendingAmount(newPendingAmountAfterPayment);
+                    } else {
+                        double newPendingAmount = existingCustomer.getPendingAmount() - existingTotalAmount + totalPrice;
+                        existingCustomer.setPendingAmount(newPendingAmount);
+                    }
+
+                    customerRepo.save(existingCustomer);
+                    System.out.println("Customer details updated successfully.");
+                } else {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Customer not found for cardNumber: " + existingMilk.getCustomer().getCardNumber());
+                }
             }
+
             if (milkDTO.getCustomer() != null) {
                 existingMilk.setCustomer(milkDTO.getCustomer());
+            } else if (milkDTO.getPaid() != null && (milkDTO.getPaid().equals("Y") || milkDTO.getPaid().equals("N"))) {
+                existingMilk.setPaid(milkDTO.getPaid());
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer number is mandatory for updating details.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer details or paid status is mandatory for updating details.");
             }
 
             // Save the updated entity back to the database
             milkRepository.save(existingMilk);
 
+            System.out.println("Milk details updated successfully.");
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully updated in the database");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database");
         }
     }
 
-    public ResponseEntity<String> deleteMilkDetailsService(@PathVariable(required = false) Integer id) {
+    public ResponseEntity<String> deleteMilkDetailsService (@PathVariable(required = false) Integer id){
 
-        if (id == null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is required to delete details.");
-        }
+            if (id == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is required to delete details.");
+            }
 
-        Optional<Milk> existingMilkOptional = milkRepository.findById(id);
+            Optional<Milk> existingMilkOptional = milkRepository.findById(id);
 
-        if (existingMilkOptional.isPresent()) {
-            Milk existingMilk = existingMilkOptional.get();
-            milkRepository.delete(existingMilk);
-            return ResponseEntity.status(HttpStatus.OK).body("Details deleted successfully");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database");
+            if (existingMilkOptional.isPresent()) {
+                Milk existingMilk = existingMilkOptional.get();
+                milkRepository.delete(existingMilk);
+                return ResponseEntity.status(HttpStatus.OK).body("Details deleted successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database");
+            }
         }
     }
-}
 
 
 

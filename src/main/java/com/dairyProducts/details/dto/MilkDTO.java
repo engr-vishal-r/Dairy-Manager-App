@@ -24,6 +24,7 @@ public class MilkDTO {
     private double pendingAmount;
     private long cardNumber;
     private String customerName;
+    private String paid;
     @ManyToOne
     @JoinColumn(name = "card_number", referencedColumnName = "card_number")
     private Customer customer;
@@ -84,6 +85,14 @@ public class MilkDTO {
         this.customerName = customerName;
     }
 
+    public String getPaid() {
+        return paid;
+    }
+
+    public void setPaid(String paid) {
+        this.paid = paid;
+    }
+
     @Override
     public String toString() {
         return "MilkDTO{" +
@@ -93,6 +102,7 @@ public class MilkDTO {
                 ", pendingAmount=" + pendingAmount +
                 ", cardNumber=" + cardNumber +
                 ", customerName='" + customerName + '\'' +
+                ", paid='" + paid + '\'' +
                 ", customer=" + customer +
                 '}';
     }
