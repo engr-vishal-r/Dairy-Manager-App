@@ -12,7 +12,6 @@ public class MilkStock {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "milkStock_id")
     private int id;
-
     @Column(name = "emp_id")
     private String employeeId;
     @Column(name = "loaded_date")
@@ -78,5 +77,3 @@ public class MilkStock {
                 '}';
     }
 }
-
-

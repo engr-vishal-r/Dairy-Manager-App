@@ -1,6 +1,5 @@
 package com.dairyProducts.details.service;
 
-import com.dairyProducts.details.dao.MilkDAO;
 import com.dairyProducts.details.dto.MilkDTO;
 import com.dairyProducts.details.dto.MilkWithCustomerDTO;
 import com.dairyProducts.details.entity.Customer;
@@ -9,6 +8,8 @@ import com.dairyProducts.details.entity.MilkStock;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.repository.MilkRepository;
 import com.dairyProducts.details.repository.MilkStockRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,8 @@ import java.util.Optional;
 @Service
 public class MilkService {
 
-    @Autowired
-    MilkDAO milkDao;
+    private static final Logger logger = LoggerFactory.getLogger(MilkService.class);
+
     @Autowired
     MilkDTO milkDTO;
     @Autowired
@@ -72,6 +73,7 @@ public class MilkService {
 
     @Transactional
     public ResponseEntity<String> addMilkDetailsService(MilkDTO milkDTO) {
+        logger.info("Request received to add milk details " + milkDTO);
         Customer customer = new Customer();
         // Check if customer is provided
         if (milkDTO.getCustomer() == null || milkDTO.getCustomer().getCardNumber() == 0) {
@@ -88,9 +90,9 @@ public class MilkService {
         Customer existingCustomer = existingCustomerOptional.get();
 
         // Check the eligibility to purchase milk
-        if (existingCustomer.getDefaulter().equals("Y")) {
+        if (existingCustomer.getDefaulter().equals("Y") || existingCustomer.getStatus().equals("CANCELLED")){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Customer has pending dues :" + existingCustomer.getPendingAmount());
+                    .body("Customer has pending dues :" + existingCustomer.getPendingAmount() + "  OR  Customer account is in cancelled state");
         } else if (milkDTO.getQuantity() == 0) { // Check if quantity is provided
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is mandatory to add details");
         } else {
@@ -107,7 +109,6 @@ public class MilkService {
             double purchasedQuantity = milkDTO.getQuantity();
             double remainingBalanceQuantity = updateMilkStockBalanceQuantity(purchasedQuantity);
 
-            System.out.println("Remaining balance quantity: " + remainingBalanceQuantity);
             if (remainingBalanceQuantity < 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Milk stock is not available");
             }
@@ -118,12 +119,11 @@ public class MilkService {
             }
             // Save the milk details
             milkRepo.save(milk);
-            System.out.println("Milk details updated successfully.");
+
             // Update customer table with pending amount details
             existingCustomer.setPendingAmount(existingCustomer.getPendingAmount() + totalPrice);
             existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= 10000 ? "Y" : "N");
             customerRepo.save(existingCustomer);
-            System.out.println("Customer details updated successfully.");
 
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database. Remaining Balance Quantity: " + remainingBalanceQuantity);
         }
@@ -160,7 +160,6 @@ public class MilkService {
                         double newPendingAmount = existingCustomer.getPendingAmount() - existingTotalAmount + totalPrice;
                         existingCustomer.setPendingAmount(newPendingAmount);
                     }
-
                     customerRepo.save(existingCustomer);
                     System.out.println("Customer details updated successfully.");
                 } else {

@@ -25,6 +25,8 @@ public class CustomerDTO {
 
     @Column(name = "defaulter")
     private String defaulter = "N";
+    @Column(name = "status")
+    private String status = "ACTIVE";
 
     @Column(name="pending_amount")
     private Double pendingAmount;
@@ -85,6 +87,14 @@ public class CustomerDTO {
         this.defaulter = defaulter;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public Double getPendingAmount() {
         return pendingAmount;
     }
@@ -103,6 +113,7 @@ public class CustomerDTO {
                 ", area=" + area +
                 ", mobileNo=" + mobileNo +
                 ", defaulter='" + defaulter + '\'' +
+                ", status='" + status + '\'' +
                 ", pendingAmount=" + pendingAmount +
                 '}';
     }

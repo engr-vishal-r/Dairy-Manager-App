@@ -1,5 +1,6 @@
 package com.dairyProducts.details.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -28,7 +29,10 @@ public class Customer {
     private Double pendingAmount=0.0;
     @Column(name = "defaulter")
     private String defaulter = "N";
+    @Column(name = "status")
+    private String status = "ACTIVE";
 
+    @JsonIgnore
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Milk> milkList;
     public Customer() {
@@ -83,6 +87,14 @@ public class Customer {
         this.mobileNo = mobileNo;
     }
 
+    public Double getPendingAmount() {
+        return pendingAmount;
+    }
+
+    public void setPendingAmount(Double pendingAmount) {
+        this.pendingAmount = pendingAmount;
+    }
+
     public String getDefaulter() {
         return defaulter;
     }
@@ -91,12 +103,12 @@ public class Customer {
         this.defaulter = defaulter;
     }
 
-    public Double getPendingAmount() {
-        return pendingAmount;
+    public String getStatus() {
+        return status;
     }
 
-    public void setPendingAmount(Double pendingAmount) {
-        this.pendingAmount = pendingAmount;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public List<Milk> getMilkList() {
@@ -116,8 +128,9 @@ public class Customer {
                 ", addressLine2='" + addressLine2 + '\'' +
                 ", area=" + area +
                 ", mobileNo=" + mobileNo +
-                ", defaulter='" + defaulter + '\'' +
                 ", pendingAmount=" + pendingAmount +
+                ", defaulter='" + defaulter + '\'' +
+                ", status='" + status + '\'' +
                 ", milkList=" + milkList +
                 '}';
     }

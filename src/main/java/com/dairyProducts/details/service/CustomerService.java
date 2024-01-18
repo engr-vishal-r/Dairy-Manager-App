@@ -1,9 +1,11 @@
 package com.dairyProducts.details.service;
 
-import com.dairyProducts.details.dao.CustomerDAO;
+
 import com.dairyProducts.details.dto.CustomerDTO;
 import com.dairyProducts.details.entity.Customer;
 import com.dairyProducts.details.repository.CustomerRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +16,9 @@ import java.util.Optional;
 
 @Service
 public class CustomerService {
-
+    private static final Logger logger = LoggerFactory.getLogger(CustomerService.class);
     @Autowired
     CustomerRepository customerRepo;
-    @Autowired
-    CustomerDAO customerDao;
 
 
     public CustomerService(CustomerRepository customerRepo) {
@@ -54,14 +54,22 @@ public class CustomerService {
         }
     }
 
-    public Optional<Customer> getCustomerDetailsService(long cardNumber) {
+    public ResponseEntity<?> getCustomerDetailsService(long cardNumber) {
 
-        return customerDao.getCustomerDetailsDao(cardNumber);
+        Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(cardNumber);
+        if (existingCustomerOptional.isPresent()) {
+            Customer existingCustomer = existingCustomerOptional.get();
+            customerRepo.findByCardNumber(cardNumber);
+            return ResponseEntity.status(HttpStatus.OK).body(existingCustomer);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database for provided" + cardNumber);
+        }
 
     }
 
     public ResponseEntity<String> updateCustomerDetailsService(CustomerDTO customerDTO) {
 
+        logger.info("Received customer update request : " + customerDTO);
         Customer customer = new Customer();
         String mobileNo = Long.toString(customerDTO.getMobileNo());
 
@@ -84,13 +92,19 @@ public class CustomerService {
                 existingCustomer.setDefaulter(customerDTO.getDefaulter());
 
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Defaulter can be 'N' or 'Y'");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Defaulter should be 'N' or 'Y'");
+            }
+            if (customerDTO.getStatus().isEmpty() || (!customerDTO.getStatus().equals("ACTIVE") && !customerDTO.getStatus().equals("CANCELLED"))) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("status field can't be empty, should be either 'ACTIVE' or 'CANCELLED'");
+            } else {
+                existingCustomer.setStatus(customerDTO.getStatus());
             }
             // Save the updated entity back to the database
             existingCustomer.setAddressLine1(customerDTO.getAddressLine1());
             existingCustomer.setAddressLine2(customerDTO.getAddressLine2());
             existingCustomer.setArea(customerDTO.getArea());
 
+            logger.info("customer update request was processed : " + customerDTO);
             customerRepo.save(existingCustomer);
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully updated in the database");
         } else {

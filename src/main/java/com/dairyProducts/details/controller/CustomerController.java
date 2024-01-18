@@ -1,11 +1,15 @@
 package com.dairyProducts.details.controller;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import com.dairyProducts.details.dto.CustomerDTO;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.service.CustomerService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +20,8 @@ import com.dairyProducts.details.entity.Customer;
 @RestController
 @RequestMapping("/customer")
 public class CustomerController {
+    private static final Logger logger = LoggerFactory.getLogger(CustomerController.class);
+
     @Autowired
     private CustomerRepository customerRepository;
 
@@ -25,33 +31,36 @@ public class CustomerController {
     @Autowired
     private CustomerDTO customerDTO;
 
-    @PostMapping(value = "/add")
-    public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerDTO) throws Exception {
-        return customerService.addCustomerDetailsService(customerDTO);
 
+    @PostMapping(value = "/add")
+    public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerDTO, @RequestHeader(name = "correlation_id", required = false) String correlationId) throws Exception  {
+
+        logger.info("Received request to add customer" +" -> "+ correlationId);
+        return customerService.addCustomerDetailsService(customerDTO);
 
     }
 
     @GetMapping(value = "/{cardNumber}")
     public ResponseEntity<?> getCustomerDetails(@PathVariable long cardNumber) {
-        Optional<Customer> customer = customerService.getCustomerDetailsService(cardNumber);
-        if (customer.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found for cardNumber: " + cardNumber);
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body(customer);
+
+        return customerService.getCustomerDetailsService(cardNumber);
         }
-    }
+
     @PutMapping(value = "/{cardNumber}")
-    public ResponseEntity<String> updateCustomerDetails(@PathVariable long cardNumber, @Valid @RequestBody CustomerDTO customerDTO) {
+    public ResponseEntity<String> updateCustomerDetails(@PathVariable long cardNumber, @Valid @RequestBody CustomerDTO customerDTO, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
+        logger.info("Received request to update customer details" +" -> "+ correlationId);
         return customerService.updateCustomerDetailsService(customerDTO);
 
     }
 
     @DeleteMapping(value = "/{cardNumber}")
-    public ResponseEntity<String> deleteCustomerDetails(@PathVariable long cardNumber) {
-
+    public ResponseEntity<String> deleteCustomerDetails(@PathVariable long cardNumber, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
+        logger.info("Received request to delete customer" +" -> "+ correlationId);
         return customerService.deleteCustomerDetailsService(cardNumber);
     }
+//    private String generateCorrelationId() {
+//        return UUID.randomUUID().toString();
+//    }
 }
 
 
