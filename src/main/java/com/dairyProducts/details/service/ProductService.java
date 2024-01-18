@@ -91,9 +91,9 @@ public class ProductService {
         Customer existingCustomer = existingCustomerOptional.get();
 
         // Check the eligibility to purchase product
-        if (existingCustomer.getDefaulter().equals("Y") || existingCustomer.getStatus().equals("CANCELLED")){
+        if (existingCustomer.getDefaulter().equals("Y") || existingCustomer.getStatus().equals("CANCELLED")) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Customer has pending dues :" + existingCustomer.getPendingAmount() + "  OR  Customer account is in cancelled state");
+                    .body("Customer has pending dues :" + existingCustomer.getPendingAmount() +  " (OR) " +  " Customer account is in cancelled state");
         } else if (productDTO.getQuantity() == 0 || productDTO.getProductName().isBlank()) { // Check if quantity and productName is provided
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity and Product Name is mandatory to add details");
         } else {
@@ -147,14 +147,12 @@ public class ProductService {
         if (existingProductOptional.isPresent()) {
             Product existingProduct = existingProductOptional.get();
             double existingTotalAmount = existingProduct.getTotalPrice();
-            System.out.println("Existing Total Amount is -> " + existingTotalAmount);
             // Update fields only if they are present in the DTO
             if (productDTO.getQuantity() != 0) {
                 existingProduct.setQuantity(productDTO.getQuantity());
                 existingProduct.setUnitPrice(getDefaultUnitPrice(productDTO.getProductName()));
                 double totalPrice = existingProduct.getUnitPrice() * existingProduct.getQuantity();
                 existingProduct.setTotalPrice(totalPrice);
-                System.out.println("Existing product total price is -> " + existingProduct.getTotalPrice());
                 // Update pending amount in customer table
                 Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(existingProduct.getCustomer().getCardNumber());
                 if (existingCustomerOptional.isPresent()) {
@@ -163,11 +161,9 @@ public class ProductService {
                     if (productDTO.getPaid() != null && productDTO.getPaid().equals("Y")) {
                         double newPendingAmountAfterPayment = existingCustomer.getPendingAmount() - existingTotalAmount;
                         existingCustomer.setPendingAmount(newPendingAmountAfterPayment);
-                        System.out.println("Customer paid 'Y' and new pending amount is -> " + existingCustomer.getPendingAmount());
                     } else {
                         double newPendingAmount = existingCustomer.getPendingAmount() - existingTotalAmount + totalPrice;
                         existingCustomer.setPendingAmount(newPendingAmount);
-                        System.out.println("Customer paid 'N' and new pending amount is -> " + existingCustomer.getPendingAmount());
                     }
                     customerRepo.save(existingCustomer);
                     System.out.println("Customer details updated successfully.");
