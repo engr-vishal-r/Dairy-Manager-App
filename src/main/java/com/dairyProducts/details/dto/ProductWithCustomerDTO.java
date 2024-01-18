@@ -1,26 +1,26 @@
 package com.dairyProducts.details.dto;
 
-import com.dairyProducts.details.entity.Milk;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.DecimalMin;
-import org.springframework.stereotype.Component;
+
+import com.dairyProducts.details.entity.Product;
 
 import java.util.List;
 
-public class MilkWithCustomerDTO {
+public class ProductWithCustomerDTO {
 
-        private List<Milk> milkList;
-        private double pendingAmount;
-        private long cardNumber;
-        private String customerName;
+    private List<Product> productList;
+    private double pendingAmount;
+    private long cardNumber;
+    private String customerName;
 
-    public List<Milk> getMilkList() {
-        return milkList;
+    public ProductWithCustomerDTO() {
     }
 
-    public void setMilkList(List<Milk> milkList) {
-        this.milkList = milkList;
+    public List<Product> getProductList() {
+        return productList;
+    }
+
+    public void setProductList(List<Product> productList) {
+        this.productList = productList;
     }
 
     public double getPendingAmount() {
@@ -49,8 +49,8 @@ public class MilkWithCustomerDTO {
 
     @Override
     public String toString() {
-        return "MilkWithCustomerDTO{" +
-                "milkList=" + milkList +
+        return "ProductWithCustomerDTO{" +
+                "productList=" + productList +
                 ", pendingAmount=" + pendingAmount +
                 ", cardNumber=" + cardNumber +
                 ", customerName='" + customerName + '\'' +

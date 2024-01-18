@@ -34,7 +34,7 @@ public class Customer {
 
     @JsonIgnore
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
-    private List<Milk> milkList;
+    private List<Product> productList;
     public Customer() {
 
     }
@@ -111,12 +111,12 @@ public class Customer {
         this.status = status;
     }
 
-    public List<Milk> getMilkList() {
-        return milkList;
+    public List<Product> getProductList() {
+        return productList;
     }
 
-    public void setMilkList(List<Milk> milkList) {
-        this.milkList = milkList;
+    public void setProductList(List<Product> productList) {
+        this.productList = productList;
     }
 
     @Override
@@ -131,7 +131,7 @@ public class Customer {
                 ", pendingAmount=" + pendingAmount +
                 ", defaulter='" + defaulter + '\'' +
                 ", status='" + status + '\'' +
-                ", milkList=" + milkList +
+                ", productList=" + productList +
                 '}';
     }
 }

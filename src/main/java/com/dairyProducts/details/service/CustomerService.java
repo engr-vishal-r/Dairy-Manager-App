@@ -60,6 +60,7 @@ public class CustomerService {
         if (existingCustomerOptional.isPresent()) {
             Customer existingCustomer = existingCustomerOptional.get();
             customerRepo.findByCardNumber(cardNumber);
+            logger.info("Fetched customer details from db : " + existingCustomer);
             return ResponseEntity.status(HttpStatus.OK).body(existingCustomer);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database for provided" + cardNumber);

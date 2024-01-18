@@ -6,7 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-public class MilkStock {
+public class ProductStock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,6 +14,8 @@ public class MilkStock {
     private int id;
     @Column(name = "emp_id")
     private String employeeId;
+    @Column(name = "product_name")
+    private String productName;
     @Column(name = "loaded_date")
     @CreationTimestamp
     private LocalDateTime loadedDate;
@@ -23,7 +25,7 @@ public class MilkStock {
     @Column(name = "balance_quantity")
     private double balanceQuantity;
 
-    public MilkStock() {
+    public ProductStock() {
     }
 
     public int getId() {
@@ -40,6 +42,14 @@ public class MilkStock {
 
     public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public LocalDateTime getLoadedDate() {
@@ -68,9 +78,10 @@ public class MilkStock {
 
     @Override
     public String toString() {
-        return "MilkStock{" +
+        return "ProductStock{" +
                 "id=" + id +
                 ", employeeId='" + employeeId + '\'' +
+                ", productName='" + productName + '\'' +
                 ", loadedDate=" + loadedDate +
                 ", loadedQuantity=" + loadedQuantity +
                 ", balanceQuantity=" + balanceQuantity +

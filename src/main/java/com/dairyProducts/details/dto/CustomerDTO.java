@@ -7,28 +7,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomerDTO {
 
-    @Id
-    @Column(name = "card_number")
+
     private long cardNumber;
 
-    @Column(name = "customer_name")
     private String customerName;
 
-    @Column(name = "address_line1")
+
     private String addressLine1;
-    @Column(name = "address_line2")
+
     private String addressLine2;
-    @Column(name = "area")
+
     private int area;
-    @Column(name = "mobileNo")
+
     private long mobileNo;
 
-    @Column(name = "defaulter")
-    private String defaulter = "N";
-    @Column(name = "status")
-    private String status = "ACTIVE";
+    private String defaulter ;
 
-    @Column(name="pending_amount")
+    private String status ;
+
+
     private Double pendingAmount;
 
     public long getCardNumber() {

@@ -10,22 +10,22 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 
 @Component
-public class MilkStockDTO {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "milkStock_id")
+public class ProductStockDTO {
+
     private int id;
 
-    @Column(name = "emp_id")
     private String employeeId;
-    @Column(name = "loaded_date")
-    @CreationTimestamp
+
+    private String productName;
+
     private LocalDateTime loadedDate;
-    @Column(name = "loaded_quantity")
+
     private double loadedQuantity;
 
-    @Column(name = "balance_quantity")
     private double balanceQuantity;
+
+    public ProductStockDTO() {
+    }
 
     public int getId() {
         return id;
@@ -41,6 +41,14 @@ public class MilkStockDTO {
 
     public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public LocalDateTime getLoadedDate() {
@@ -69,9 +77,10 @@ public class MilkStockDTO {
 
     @Override
     public String toString() {
-        return "MilkStockDTO{" +
+        return "ProductStockDTO{" +
                 "id=" + id +
                 ", employeeId='" + employeeId + '\'' +
+                ", productName='" + productName + '\'' +
                 ", loadedDate=" + loadedDate +
                 ", loadedQuantity=" + loadedQuantity +
                 ", balanceQuantity=" + balanceQuantity +

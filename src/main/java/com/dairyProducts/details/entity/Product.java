@@ -10,17 +10,19 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-public class Milk {
+public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "milk_id")
     private int id;
+    @Column(name = "product_name")
+    private String productName;
     @Column(name = "quantity")
     private double quantity;
 
     @Column(name = "unit_Price")
-    private double unitPrice = 50.0;
+    private double unitPrice ;
 
     @Column(name = "purchased_date")
     @CreationTimestamp
@@ -41,7 +43,7 @@ public class Milk {
     @JsonIgnore
     private Customer customer;
 
-    public Milk() {
+    public Product() {
 
     }
 
@@ -51,6 +53,14 @@ public class Milk {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public double getQuantity() {
@@ -93,14 +103,6 @@ public class Milk {
         this.totalPrice = totalPrice;
     }
 
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
-
     public String getPaid() {
         return paid;
     }
@@ -109,17 +111,26 @@ public class Milk {
         this.paid = paid;
     }
 
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
     @Override
     public String toString() {
-        return "Milk{" +
+        return "Product{" +
                 "id=" + id +
+                ", productName='" + productName + '\'' +
                 ", quantity=" + quantity +
                 ", unitPrice=" + unitPrice +
                 ", purchasedDate=" + purchasedDate +
                 ", updatedDate=" + updatedDate +
                 ", totalPrice=" + totalPrice +
+                ", paid='" + paid + '\'' +
                 ", customer=" + customer +
-                ", paid=" + paid +
                 '}';
     }
 }
