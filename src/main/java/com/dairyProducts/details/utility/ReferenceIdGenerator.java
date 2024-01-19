@@ -1,32 +1,30 @@
-package com.dairyProducts.details.controller;
+package com.dairyProducts.details.utility;
 
-import com.dairyProducts.details.entity.Customer;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.jdbc.Work;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Month;
 import java.time.Year;
-import java.util.concurrent.atomic.AtomicLong;
+import java.time.YearMonth;
 
-public class CustomerCardNumberGenerator implements IdentifierGenerator {
+public class ReferenceIdGenerator implements IdentifierGenerator {
 
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object object)
             throws HibernateException {
-        String prefix = String.valueOf(Year.now().getValue());
+        YearMonth currentYearMonth = YearMonth.now();
+        String yearMonthSuffix = currentYearMonth.getMonth().toString().substring(0, 3);
 
         // Wrapper class to hold the generated ID
         class ResultHolder {
-            Long generatedId;
-
+            String generatedId;
         }
 
         ResultHolder resultHolder = new ResultHolder();
@@ -36,11 +34,11 @@ public class CustomerCardNumberGenerator implements IdentifierGenerator {
             @Override
             public void execute(Connection connection) throws SQLException {
                 try (Statement statement = connection.createStatement()) {
-                    ResultSet rs = statement.executeQuery("select count(card_number) as Id from customer");
+                    ResultSet rs = statement.executeQuery("select count(milk_id) as Id from product");
 
                     if (rs.next()) {
-                        int id = rs.getInt(1) + 101;
-                        resultHolder.generatedId = Long.parseLong(prefix + id);
+                        int id = rs.getInt(1) + 10000;  // Incremented ID
+                        resultHolder.generatedId = Year.now().getValue() + String.format("%05d", id) + yearMonthSuffix;
                     }
                 }
             }

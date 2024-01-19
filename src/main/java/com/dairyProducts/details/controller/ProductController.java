@@ -40,7 +40,7 @@ public class ProductController {
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<String> deleteProductDetails(@PathVariable int id, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
+    public ResponseEntity<String> deleteProductDetails(@PathVariable String id, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
         logger.info("Received request to delete product details" + " -> " + correlationId);
         return productService.deleteProductDetailsService(id);
     }

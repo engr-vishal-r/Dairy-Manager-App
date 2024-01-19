@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ProductDTO {
 
-    private int id;
+    private String id;
     private double quantity;
     private List<Product> productList;
     private double pendingAmount;
@@ -20,11 +20,11 @@ public class ProductDTO {
 
     private Customer customer;
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

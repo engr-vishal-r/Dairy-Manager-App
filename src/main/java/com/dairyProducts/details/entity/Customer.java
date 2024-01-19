@@ -14,7 +14,7 @@ import java.util.List;
 public class Customer {
     @Id
     @GeneratedValue(generator = "custom_card_number_generator")
-    @GenericGenerator(name = "custom_card_number_generator", strategy = "com.dairyProducts.details.controller.CustomerCardNumberGenerator")
+    @GenericGenerator(name = "custom_card_number_generator", strategy = "com.dairyProducts.details.utility.CustomerCardNumberGenerator")
     @Column(name = "card_number")
     private long cardNumber;
     @Column(name = "customer_name")

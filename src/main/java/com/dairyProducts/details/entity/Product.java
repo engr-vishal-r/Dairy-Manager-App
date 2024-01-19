@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
@@ -14,9 +15,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Product {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "reference_id_generator")
+    @GenericGenerator(name = "reference_id_generator", strategy = "com.dairyProducts.details.utility.ReferenceIdGenerator")
     @Column(name = "milk_id")
-    private int id;
+    private String id;
     @Column(name = "product_name")
     private String productName;
     @Column(name = "quantity")
@@ -48,11 +50,11 @@ public class Product {
 
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

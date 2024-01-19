@@ -139,7 +139,7 @@ public class ProductService {
 
     @Transactional
     public ResponseEntity<String> updateProductDetailsService(ProductDTO productDTO) {
-        if (productDTO.getId() == 0) {
+        if (productDTO.getId() == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is mandatory for updating details.");
         }
 
@@ -193,7 +193,7 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<String> deleteProductDetailsService(@PathVariable(required = false) Integer id) {
+    public ResponseEntity<String> deleteProductDetailsService(@PathVariable(required = false) String id) {
 
         if (id == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("ID is required to delete details.");

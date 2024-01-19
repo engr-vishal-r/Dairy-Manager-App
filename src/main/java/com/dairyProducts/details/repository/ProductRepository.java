@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findByCustomerCardNumber(long cardNumber);
 
-    Optional<Product> findById(int id);
+    Optional<Product> findById(String id);
 
     List<Product> findByCustomerCardNumberAndPurchasedDateAfter(long cardNumber, LocalDateTime purchasedDate);
 }
