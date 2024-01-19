@@ -3,6 +3,7 @@ package com.dairyProducts.details.service;
 
 import com.dairyProducts.details.dto.CustomerDTO;
 import com.dairyProducts.details.entity.Customer;
+import com.dairyProducts.details.entity.Product;
 import com.dairyProducts.details.repository.CustomerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.PathVariable;
 
+
 import java.util.Optional;
+
 
 @Service
 public class CustomerService {
@@ -150,4 +153,3 @@ public class CustomerService {
         }
     }
 }
-

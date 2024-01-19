@@ -1,10 +1,8 @@
 package com.dairyProducts.details.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import org.springframework.stereotype.Component;
 
-@Component
+
+
 public class CustomerDTO {
 
 
@@ -26,7 +24,19 @@ public class CustomerDTO {
     private String status ;
 
 
-    private Double pendingAmount;
+    private double pendingAmount;
+
+    public CustomerDTO(long cardNumber, String customerName, String addressLine1, String addressLine2, int area, long mobileNo, String defaulter, String status, double pendingAmount) {
+        this.cardNumber = cardNumber;
+        this.customerName = customerName;
+        this.addressLine1 = addressLine1;
+        this.addressLine2 = addressLine2;
+        this.area = area;
+        this.mobileNo = mobileNo;
+        this.defaulter = defaulter;
+        this.status = status;
+        this.pendingAmount = pendingAmount;
+    }
 
     public long getCardNumber() {
         return cardNumber;
@@ -92,11 +102,11 @@ public class CustomerDTO {
         this.status = status;
     }
 
-    public Double getPendingAmount() {
+    public double getPendingAmount() {
         return pendingAmount;
     }
 
-    public void setPendingAmount(Double pendingAmount) {
+    public void setPendingAmount(double pendingAmount) {
         this.pendingAmount = pendingAmount;
     }
 

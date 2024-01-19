@@ -19,8 +19,8 @@ import java.util.Optional;
 @Service
 public class ProductStockService {
     private static final Logger logger = LoggerFactory.getLogger(ProductStockService.class);
-    @Autowired
-    ProductStockDTO productStockDTO;
+
+    private ProductStockDTO productStockDTO;
     @Autowired
     private ProductStockRepository productStockRepo;
 

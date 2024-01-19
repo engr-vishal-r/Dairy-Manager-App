@@ -3,16 +3,9 @@ package com.dairyProducts.details.dto;
 import com.dairyProducts.details.entity.Customer;
 import com.dairyProducts.details.entity.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.DecimalMin;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
 public class ProductDTO {
 
     private int id;
@@ -25,7 +18,6 @@ public class ProductDTO {
 
     private String productName;
 
-    @JsonIgnore
     private Customer customer;
 
     public int getId() {
@@ -98,6 +90,9 @@ public class ProductDTO {
 
     public void setCustomer(Customer customer) {
         this.customer = customer;
+    }
+
+    public ProductDTO(){
     }
 
     @Override

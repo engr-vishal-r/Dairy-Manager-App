@@ -1,10 +1,10 @@
 package com.dairyProducts.details.dto;
 
-import org.springframework.stereotype.Component;
+
 
 import java.time.LocalDateTime;
 
-@Component
+
 public class ProductStockDTO {
 
     private int id;

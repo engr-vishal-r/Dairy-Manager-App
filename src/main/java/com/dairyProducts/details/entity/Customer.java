@@ -26,14 +26,14 @@ public class Customer {
     private long mobileNo;
 
     @Column(name="pending_amount")
-    private Double pendingAmount=0.0;
+    private double pendingAmount=0.0;
     @Column(name = "defaulter")
     private String defaulter = "N";
     @Column(name = "status")
     private String status = "ACTIVE";
 
     @JsonIgnore
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Product> productList;
     public Customer() {
 
@@ -87,11 +87,11 @@ public class Customer {
         this.mobileNo = mobileNo;
     }
 
-    public Double getPendingAmount() {
+    public double getPendingAmount() {
         return pendingAmount;
     }
 
-    public void setPendingAmount(Double pendingAmount) {
+    public void setPendingAmount(double pendingAmount) {
         this.pendingAmount = pendingAmount;
     }
 
@@ -134,6 +134,8 @@ public class Customer {
                 ", productList=" + productList +
                 '}';
     }
+
+
 }
 
 

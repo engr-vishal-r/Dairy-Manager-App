@@ -8,6 +8,7 @@ import com.dairyProducts.details.entity.ProductStock;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.repository.ProductRepository;
 import com.dairyProducts.details.repository.ProductStockRepository;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +27,7 @@ public class ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
-    @Autowired
-    ProductDTO productDTO;
+    private ProductDTO productDTO;
     @Autowired
     private ProductRepository productRepo;
     @Autowired
@@ -73,29 +73,32 @@ public class ProductService {
     }
 
     @Transactional
-    public ResponseEntity<String> addProductDetailsService(ProductDTO productDTO) {
+    public ResponseEntity<String> addProductDetailsService(long cardNumber, ProductDTO productDTO) {
         logger.info("Request received to add product details " + productDTO);
+
         Customer customer = new Customer();
-        // Check if customer is provided
-        if (productDTO.getCustomer() == null || productDTO.getCustomer().getCardNumber() == 0) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Card Number is mandatory to add details");
-        }
+
+        // Use cardNumber from the URL path
+        customer.setCardNumber(cardNumber);
 
         // Check if card number exists in the database
-        Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(productDTO.getCustomer().getCardNumber());
+        Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(cardNumber);
         if (existingCustomerOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No details found in the database for the given card number");
+                    .body("No customer details found for the given card number  :" + cardNumber);
         }
 
         Customer existingCustomer = existingCustomerOptional.get();
 
         // Check the eligibility to purchase product
-        if (existingCustomer.getDefaulter().equals("Y") || existingCustomer.getStatus().equals("CANCELLED")) {
+        if (existingCustomer.getDefaulter().equals("Y") &&
+                (existingCustomer.getStatus().equals("CANCELLED") || existingCustomer.getStatus().equals("INACTIVE"))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Customer has pending dues :" + existingCustomer.getPendingAmount() +  " (OR) " +  " Customer account is in cancelled state");
-        } else if (productDTO.getQuantity() == 0 || productDTO.getProductName().isBlank()) { // Check if quantity and productName is provided
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity and Product Name is mandatory to add details");
+                    .body("Customer has pending dues: " + existingCustomer.getPendingAmount() +
+                            " (OR) Customer account is in CANCELLED or INACTIVE state");
+        } else if (productDTO.getQuantity() == 0 || productDTO.getProductName().isBlank()) {
+            // Check if quantity and productName are provided
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity and Product Name are mandatory to add details");
         } else {
             // Create new Product instance
             Product product = new Product();
@@ -117,13 +120,14 @@ public class ProductService {
             }
 
             // Update customer table with pending amount details
-            if (existingCustomer.getPendingAmount() == null) {
+            if (existingCustomer.getPendingAmount() == 0) {
                 existingCustomer.setPendingAmount(0.0); // Set a default value if it's null
             }
+
             // Save the product details
             Product savedProduct = productRepo.save(product);
-            // Access the ID from the saved product
 
+            // Access the ID from the saved product
             long productId = savedProduct.getId();
 
             // Update customer table with pending amount details
@@ -131,8 +135,8 @@ public class ProductService {
             existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= 10000 ? "Y" : "N");
             customerRepo.save(existingCustomer);
 
-            return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database. Remaining Balance Quantity ->  " + remainingBalanceQuantity +
-                    "    Please save the reference id for future reference  -> " + productId);
+            return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database. Remaining Balance Quantity ->  " +
+                    remainingBalanceQuantity + " Please save the reference id for future reference  -> " + productId);
         }
     }
 

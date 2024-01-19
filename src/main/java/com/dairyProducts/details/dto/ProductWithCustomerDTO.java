@@ -9,7 +9,7 @@ public class ProductWithCustomerDTO {
 
     private List<Product> productList;
     private double pendingAmount;
-    private long cardNumber;
+    private Long cardNumber;
     private String customerName;
 
     public ProductWithCustomerDTO() {
@@ -31,11 +31,11 @@ public class ProductWithCustomerDTO {
         this.pendingAmount = pendingAmount;
     }
 
-    public long getCardNumber() {
+    public Long getCardNumber() {
         return cardNumber;
     }
 
-    public void setCardNumber(long cardNumber) {
+    public void setCardNumber(Long cardNumber) {
         this.cardNumber = cardNumber;
     }
 

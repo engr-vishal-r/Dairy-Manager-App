@@ -15,7 +15,7 @@ public class ProductStockController {
     private ProductStockRepository productStockRepo;
     @Autowired
     private ProductStockService productStockService;
-    @Autowired
+
     private ProductStockDTO productStockDTO;
 
     @PostMapping(value = "/add")

@@ -24,7 +24,6 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
-    @Autowired
     private CustomerDTO customerDTO;
 
 
