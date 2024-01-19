@@ -3,6 +3,7 @@ package com.dairyProducts.details.service;
 
 import com.dairyProducts.details.dto.ProductStockDTO;
 import com.dairyProducts.details.entity.ProductStock;
+import com.dairyProducts.details.handler.ProductNotFoundException;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.repository.ProductStockRepository;
 import org.slf4j.Logger;
@@ -33,9 +34,7 @@ public class ProductStockService {
     public ResponseEntity<?> getProductStockDetailsService(int id) {
         Optional<ProductStock> existingProductOptional = productStockRepo.findById(id);
 
-        if (existingProductOptional.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for the provided id: " + id);
-        } else {
+        if (existingProductOptional.isPresent()) {
             ProductStock productStock = existingProductOptional.get();
             productStockDTO.setId(productStock.getId());
             productStockDTO.setEmployeeId(productStock.getEmployeeId());
@@ -44,6 +43,9 @@ public class ProductStockService {
             productStockDTO.setBalanceQuantity(productStock.getBalanceQuantity());
             productStockDTO.setLoadedQuantity(productStock.getLoadedQuantity());
             return ResponseEntity.status(HttpStatus.OK).body(productStockDTO);
+        } else {
+            throw new ProductNotFoundException("No details found for the provided id: " + id);
+
         }
     }
 

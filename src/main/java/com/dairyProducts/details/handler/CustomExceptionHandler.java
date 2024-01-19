@@ -15,5 +15,10 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         logger.error("Global Exception: " + ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal Server Error");
     }
+
+    @ExceptionHandler(ProductNotFoundException.class)
+    public final ResponseEntity<Object> handleProductNotFoundException(ProductNotFoundException ex, WebRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
 }
 
