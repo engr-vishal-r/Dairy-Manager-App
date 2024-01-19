@@ -18,6 +18,8 @@ import java.time.LocalDate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 public class CustomerStatusUpdater {
@@ -33,17 +35,14 @@ public class CustomerStatusUpdater {
     @Scheduled(cron = "0 0 0 1 * ?") // Runs at midnight on the 1st day of every month
     public void updateCustomerStatus() {
 
-        logger.info("Job Started to update customer status");
+        logger.info("Job Started to update customer status    "  + "Correlation-id:  " +generateCorrelationId());
         // Fetch customers, check their purchase history, and update status accordingly
         try {
-            List<Customer> customersToUpdate = new ArrayList<>();
             List<Customer> activeCustomers = customerRepo.findByStatus("ACTIVE");
-            for (Customer customer : activeCustomers) {
-                // Check purchase history and update status
-                if (!hasPurchaseInLast30Days(customer)) {
-                    customersToUpdate.add(customer);
-                }
-            }
+
+            List<Customer> customersToUpdate = activeCustomers.stream()
+                    .filter(customer -> !hasPurchaseInLast30Days(customer))
+                    .collect(Collectors.toList());
 
             // Print the list of customers to be updated
             for (Customer customer : customersToUpdate) {
@@ -52,16 +51,15 @@ public class CustomerStatusUpdater {
             }
 
             // Perform the actual updates
-            for (Customer customer : customersToUpdate) {
+            customersToUpdate.forEach(customer -> {
                 customer.setStatus("INACTIVE");
                 customerRepo.save(customer);
-                    logger.info("Batch Job completed and Customer status updated successfully");
-                }
-            }catch(Exception e){
-                logger.error("Error Occurred while adding customer details: " + e.getMessage(), e);
+            });
+        } catch (Exception e) {
+            logger.error("Error Occurred while adding customer details: " + e.getMessage(), e);
 
-            }
         }
+    }
 
     private boolean hasPurchaseInLast30Days(Customer customer) {
         // Logic to check if the customer made a purchase in the last 30 days
@@ -69,6 +67,10 @@ public class CustomerStatusUpdater {
         LocalDate currentDate = LocalDate.now().minusDays(30);
         List<Product> purchases = productRepo.findByCustomerCardNumberAndPurchasedDateAfter(customer.getCardNumber(), currentDate.atStartOfDay());
         return !purchases.isEmpty();
+    }
+
+    private String generateCorrelationId() {
+        return UUID.randomUUID().toString();
     }
 }
 

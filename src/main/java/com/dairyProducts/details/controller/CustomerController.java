@@ -30,7 +30,7 @@ public class CustomerController {
     @PostMapping(value = "/add")
     public ResponseEntity<String> addCustomer(@Valid @RequestBody CustomerDTO customerDTO, @RequestHeader(name = "correlation_id", required = false) String correlationId) throws Exception  {
 
-        logger.info("Received request to add customer" +" -> "+ correlationId);
+        logger.info("Received request to add customer" +" -> "+  correlationId + customerDTO );
         return customerService.addCustomerDetailsService(customerDTO);
 
     }

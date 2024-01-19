@@ -60,7 +60,7 @@ public class ProductService {
             // Check if total pending amount exceeds 10000 and update defaulter column
             customer.setDefaulter(customer.getPendingAmount() >= 10000 ? "Y" : "N");
             customerRepo.save(customer);
-            System.out.println("Customer details persisted successfully.");
+            System.out.println("Customer details retrieved successfully.");
 
             ProductWithCustomerDTO productWithCustomerDTO = new ProductWithCustomerDTO();
             productWithCustomerDTO.setProductList(productList);
@@ -127,16 +127,13 @@ public class ProductService {
             // Save the product details
             Product savedProduct = productRepo.save(product);
 
-            // Access the ID from the saved product
-            long productId = savedProduct.getId();
-
             // Update customer table with pending amount details
             existingCustomer.setPendingAmount(existingCustomer.getPendingAmount() + totalPrice);
             existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= 10000 ? "Y" : "N");
             customerRepo.save(existingCustomer);
 
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database. Remaining Balance Quantity ->  " +
-                    remainingBalanceQuantity + " Please save the reference id for future reference  -> " + productId);
+                    remainingBalanceQuantity + " Please save the reference id for future reference  -> " + savedProduct.getId());
         }
     }
 

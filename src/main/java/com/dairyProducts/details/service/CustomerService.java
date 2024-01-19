@@ -52,8 +52,8 @@ public class CustomerService {
             } else if (!area.matches("[0-9]{6}")) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Area code should be 6 digits");
             } else {
-                customerRepo.save(customer);
-                return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database");
+                Customer savedCustomer = customerRepo.save(customer);
+                return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database    " + " Save the customer card number for future reference " + savedCustomer.getCardNumber());
             }
         } catch (Exception e) {
             logger.error("Error Occurred while adding customer details: " + e.getMessage(), e);
@@ -82,7 +82,7 @@ public class CustomerService {
 
     public ResponseEntity<String> updateCustomerDetailsService(CustomerDTO customerDTO) {
 
-        logger.info("Received customer update request : " + customerDTO);
+        logger.info("Received customer update request  : " + customerDTO);
         try {
             Customer customer = new Customer();
             String mobileNo = Long.toString(customerDTO.getMobileNo());

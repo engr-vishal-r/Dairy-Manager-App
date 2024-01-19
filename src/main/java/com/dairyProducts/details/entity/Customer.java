@@ -2,11 +2,15 @@ package com.dairyProducts.details.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
+@Table(name="customer")
 public class Customer {
     @Id
     @GeneratedValue(generator = "custom_card_number_generator")
@@ -31,14 +35,19 @@ public class Customer {
     private String defaulter = "N";
     @Column(name = "status")
     private String status = "ACTIVE";
+    @Column(name = "enrolled_date")
+    @CreationTimestamp
+    private LocalDateTime enrolledDate;
 
+    @Column(name = "updated_date")
+    @UpdateTimestamp
+    private LocalDateTime updatedDate;
     @JsonIgnore
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "customer", cascade = CascadeType.ALL)
     private List<Product> productList;
     public Customer() {
 
     }
-
     public long getCardNumber() {
         return cardNumber;
     }
@@ -111,6 +120,22 @@ public class Customer {
         this.status = status;
     }
 
+    public LocalDateTime getEnrolledDate() {
+        return enrolledDate;
+    }
+
+    public void setEnrolledDate(LocalDateTime enrolledDate) {
+        this.enrolledDate = enrolledDate;
+    }
+
+    public LocalDateTime getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(LocalDateTime updatedDate) {
+        this.updatedDate = updatedDate;
+    }
+
     public List<Product> getProductList() {
         return productList;
     }
@@ -131,11 +156,11 @@ public class Customer {
                 ", pendingAmount=" + pendingAmount +
                 ", defaulter='" + defaulter + '\'' +
                 ", status='" + status + '\'' +
+                ", enrolledDate=" + enrolledDate +
+                ", updatedDate=" + updatedDate +
                 ", productList=" + productList +
                 '}';
     }
-
-
 }
 
 

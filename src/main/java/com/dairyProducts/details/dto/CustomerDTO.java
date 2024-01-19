@@ -1,7 +1,7 @@
 package com.dairyProducts.details.dto;
 
 
-
+import java.time.LocalDateTime;
 
 public class CustomerDTO {
 
@@ -9,7 +9,6 @@ public class CustomerDTO {
     private long cardNumber;
 
     private String customerName;
-
 
     private String addressLine1;
 
@@ -19,24 +18,12 @@ public class CustomerDTO {
 
     private long mobileNo;
 
-    private String defaulter ;
+    private String defaulter;
 
-    private String status ;
+    private String status;
 
-
+    private LocalDateTime enrolledDate;
     private double pendingAmount;
-
-    public CustomerDTO(long cardNumber, String customerName, String addressLine1, String addressLine2, int area, long mobileNo, String defaulter, String status, double pendingAmount) {
-        this.cardNumber = cardNumber;
-        this.customerName = customerName;
-        this.addressLine1 = addressLine1;
-        this.addressLine2 = addressLine2;
-        this.area = area;
-        this.mobileNo = mobileNo;
-        this.defaulter = defaulter;
-        this.status = status;
-        this.pendingAmount = pendingAmount;
-    }
 
     public long getCardNumber() {
         return cardNumber;
@@ -102,12 +89,23 @@ public class CustomerDTO {
         this.status = status;
     }
 
+    public LocalDateTime getEnrolledDate() {
+        return enrolledDate;
+    }
+
+    public void setEnrolledDate(LocalDateTime enrolledDate) {
+        this.enrolledDate = enrolledDate;
+    }
+
     public double getPendingAmount() {
         return pendingAmount;
     }
 
     public void setPendingAmount(double pendingAmount) {
         this.pendingAmount = pendingAmount;
+    }
+
+    public CustomerDTO() {
     }
 
     @Override
@@ -121,6 +119,7 @@ public class CustomerDTO {
                 ", mobileNo=" + mobileNo +
                 ", defaulter='" + defaulter + '\'' +
                 ", status='" + status + '\'' +
+                ", enrolledDate=" + enrolledDate +
                 ", pendingAmount=" + pendingAmount +
                 '}';
     }
