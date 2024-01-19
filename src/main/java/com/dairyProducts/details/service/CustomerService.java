@@ -81,12 +81,9 @@ public class CustomerService {
     }
 
     public ResponseEntity<String> updateCustomerDetailsService(CustomerDTO customerDTO) {
+        logger.info("Received customer update request: " + customerDTO);
 
-        logger.info("Received customer update request  : " + customerDTO);
         try {
-            Customer customer = new Customer();
-            String mobileNo = Long.toString(customerDTO.getMobileNo());
-
             if (customerDTO.getCardNumber() == 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Card Number is mandatory for updating details.");
             }
@@ -97,39 +94,41 @@ public class CustomerService {
                 Customer existingCustomer = existingCustomerOptional.get();
 
                 // Update fields only if they are present in the DTO
-                if (customerDTO.getCustomerName().isEmpty() || mobileNo.isEmpty()) {
+                if (isEmptyOrNullOrWhitespace(customerDTO.getCustomerName()) || customerDTO.getMobileNo() ==0) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer name/mobile no. is mandatory for updating details.");
+                }
 
-                } else if (customerDTO.getDefaulter().equals("Y") || customerDTO.getDefaulter().equals("N")) {
-                    existingCustomer.setCustomerName(customerDTO.getCustomerName());
-                    existingCustomer.setMobileNo(customerDTO.getMobileNo());
-                    existingCustomer.setDefaulter(customerDTO.getDefaulter());
-
-                } else {
+                if (!isValidDefaulter(customerDTO.getDefaulter())) {
                     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Defaulter should be 'N' or 'Y'");
                 }
-                if (customerDTO.getStatus().isEmpty() || (!customerDTO.getStatus().equals("ACTIVE") && !customerDTO.getStatus().equals("CANCELLED"))) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("status field can't be empty, should be either 'ACTIVE' or 'CANCELLED'");
-                } else {
-                    existingCustomer.setStatus(customerDTO.getStatus());
+
+                if (isEmptyOrNullOrWhitespace(customerDTO.getStatus()) || !isValidStatus(customerDTO.getStatus())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Status field can't be empty, should be either 'ACTIVE' or 'CANCELLED'");
                 }
-                // Save the updated entity back to the database
+
+                // Update customer details
+                existingCustomer.setCustomerName(customerDTO.getCustomerName());
+                existingCustomer.setMobileNo(customerDTO.getMobileNo());
+                existingCustomer.setDefaulter(customerDTO.getDefaulter());
+                existingCustomer.setStatus(customerDTO.getStatus());
+
+                // Update other fields
                 existingCustomer.setAddressLine1(customerDTO.getAddressLine1());
                 existingCustomer.setAddressLine2(customerDTO.getAddressLine2());
                 existingCustomer.setArea(customerDTO.getArea());
 
-                logger.info("customer update request was processed : " + customerDTO);
-                customerRepo.save(existingCustomer);
-                return ResponseEntity.status(HttpStatus.OK).body("Details successfully updated in the database");
+                logger.info("Customer update request was processed: " + customerDTO);
+                Customer updatedCustomer = customerRepo.save(existingCustomer);
+
+                return ResponseEntity.status(HttpStatus.OK).body("Details successfully updated in the database" + updatedCustomer);
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Details not found in the database");
             }
         } catch (Exception e) {
-            logger.error("Error Occurred while updating customer details : " + e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Occurred while updating customer details");
+            logger.error("Error occurred while updating customer details: " + e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while updating customer details");
         }
     }
-
     public ResponseEntity<String> deleteCustomerDetailsService(@PathVariable(required = false) long cardNumber) {
 
         logger.info("Received cardNumber to delete customer details ->" + cardNumber);
@@ -151,5 +150,18 @@ public class CustomerService {
             logger.error("Error Occurred while deleting customer details: " + e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Occurred while deleting customer details");
         }
+    }
+
+    // Helper methods for checking conditions
+    private boolean isEmptyOrNullOrWhitespace(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private boolean isValidDefaulter(String defaulter) {
+        return defaulter != null && (defaulter.equals("Y") || defaulter.equals("N"));
+    }
+
+    private boolean isValidStatus(String status) {
+        return status != null && (status.equals("ACTIVE") || status.equals("CANCELLED"));
     }
 }
