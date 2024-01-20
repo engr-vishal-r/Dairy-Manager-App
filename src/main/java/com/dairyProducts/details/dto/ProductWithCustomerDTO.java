@@ -11,8 +11,15 @@ public class ProductWithCustomerDTO {
     private double pendingAmount;
     private Long cardNumber;
     private String customerName;
+    private String csvFileLink;
 
-    public ProductWithCustomerDTO() {
+
+    public ProductWithCustomerDTO(List<Product> productList, double pendingAmount, Long cardNumber, String customerName, String csvFileLink) {
+        this.productList = productList;
+        this.pendingAmount = pendingAmount;
+        this.cardNumber = cardNumber;
+        this.customerName = customerName;
+        this.csvFileLink = csvFileLink;
     }
 
     public List<Product> getProductList() {
@@ -45,6 +52,14 @@ public class ProductWithCustomerDTO {
 
     public void setCustomerName(String customerName) {
         this.customerName = customerName;
+    }
+
+    public String getCsvFileLink() {
+        return csvFileLink;
+    }
+
+    public void setCsvFileLink(String csvFileLink) {
+        this.csvFileLink = csvFileLink;
     }
 
     @Override

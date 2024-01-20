@@ -6,11 +6,12 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name="product_stock")
 public class ProductStock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "milkStock_id")
+    @Column(name = "stock_id")
     private int id;
     @Column(name = "emp_id")
     private String employeeId;
