@@ -39,7 +39,7 @@ public class ProductStockService {
             ProductStock productStock = existingProductOptional.get();
             productStockDTO.setId(productStock.getId());
             productStockDTO.setEmployeeId(productStock.getEmployeeId());
-            productStockDTO.setProductName(productStock.getProductName());
+            productStockDTO.setProductName(productStock.getProductName().toUpperCase());
             productStockDTO.setLoadedDate(productStock.getLoadedDate());
             productStockDTO.setBalanceQuantity(productStock.getBalanceQuantity());
             productStockDTO.setLoadedQuantity(productStock.getLoadedQuantity());
@@ -56,7 +56,7 @@ public class ProductStockService {
             ProductStock productStock = new ProductStock();
             productStock.setLoadedQuantity(productStockDTO.getLoadedQuantity());
             productStock.setEmployeeId(productStockDTO.getEmployeeId());
-            productStock.setProductName(productStockDTO.getProductName());
+            productStock.setProductName(productStockDTO.getProductName().toUpperCase());
             productStock.setBalanceQuantity(productStockDTO.getLoadedQuantity());
             String quantity = Integer.toString((int) productStockDTO.getLoadedQuantity());
 

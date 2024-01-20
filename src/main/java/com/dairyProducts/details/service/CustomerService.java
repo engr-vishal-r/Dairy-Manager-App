@@ -23,7 +23,6 @@ public class CustomerService {
     @Autowired
     CustomerRepository customerRepo;
 
-
     public CustomerService(CustomerRepository customerRepo) {
         this.customerRepo = customerRepo;
     }
@@ -31,9 +30,9 @@ public class CustomerService {
     public ResponseEntity<String> addCustomerDetailsService(CustomerDTO customerDTO) {
         try {
             Customer customer = new Customer();
-            customer.setCustomerName(customerDTO.getCustomerName());
-            customer.setAddressLine1(customerDTO.getAddressLine1());
-            customer.setAddressLine2(customerDTO.getAddressLine2());
+            customer.setCustomerName(customerDTO.getCustomerName().toUpperCase());
+            customer.setAddressLine1(customerDTO.getAddressLine1().toUpperCase());
+            customer.setAddressLine2(customerDTO.getAddressLine2().toUpperCase());
             customer.setMobileNo(customerDTO.getMobileNo());
             customer.setArea(customerDTO.getArea());
 
@@ -107,14 +106,14 @@ public class CustomerService {
                 }
 
                 // Update customer details
-                existingCustomer.setCustomerName(customerDTO.getCustomerName());
+                existingCustomer.setCustomerName(customerDTO.getCustomerName().toUpperCase());
                 existingCustomer.setMobileNo(customerDTO.getMobileNo());
                 existingCustomer.setDefaulter(customerDTO.getDefaulter());
                 existingCustomer.setStatus(customerDTO.getStatus());
 
                 // Update other fields
-                existingCustomer.setAddressLine1(customerDTO.getAddressLine1());
-                existingCustomer.setAddressLine2(customerDTO.getAddressLine2());
+                existingCustomer.setAddressLine1(customerDTO.getAddressLine1().toUpperCase());
+                existingCustomer.setAddressLine2(customerDTO.getAddressLine2().toUpperCase());
                 existingCustomer.setArea(customerDTO.getArea());
 
                 logger.info("Customer update request was processed: " + customerDTO);

@@ -6,15 +6,13 @@ import com.dairyProducts.details.entity.Product;
 import java.util.List;
 
 public class ProductWithCustomerDTO {
-
     private List<Product> productList;
     private double pendingAmount;
     private Long cardNumber;
     private String customerName;
-    private String csvFileLink;
+    private List<String> csvFileLink;
 
-
-    public ProductWithCustomerDTO(List<Product> productList, double pendingAmount, Long cardNumber, String customerName, String csvFileLink) {
+    public ProductWithCustomerDTO(List<Product> productList, double pendingAmount, Long cardNumber, String customerName, List<String> csvFileLink) {
         this.productList = productList;
         this.pendingAmount = pendingAmount;
         this.cardNumber = cardNumber;
@@ -54,11 +52,11 @@ public class ProductWithCustomerDTO {
         this.customerName = customerName;
     }
 
-    public String getCsvFileLink() {
+    public List<String> getCsvFileLink() {
         return csvFileLink;
     }
 
-    public void setCsvFileLink(String csvFileLink) {
+    public void setCsvFileLink(List<String> csvFileLink) {
         this.csvFileLink = csvFileLink;
     }
 
