@@ -2,10 +2,12 @@ package com.dairyProducts.details.service;
 
 
 import com.dairyProducts.details.dto.ProductStockDTO;
+import com.dairyProducts.details.dto.ProductWithCustomerDTO;
 import com.dairyProducts.details.entity.ProductStock;
 import com.dairyProducts.details.handler.ProductNotFoundException;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.repository.ProductStockRepository;
+import com.dairyProducts.details.utility.CSVGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Collections;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductStockService {
@@ -32,21 +38,31 @@ public class ProductStockService {
         this.productStockRepo = productStockRepo;
     }
 
-    public ResponseEntity<?> getProductStockDetailsService(int id) {
-        Optional<ProductStock> existingProductOptional = productStockRepo.findById(id);
+    public ResponseEntity<?> getProductStockDetailsService(String employeeId) {
+        CSVGenerator csvGenerator = new CSVGenerator();
+        List<ProductStock> existingProductList = productStockRepo.findByEmployeeId(employeeId);
 
-        if (existingProductOptional.isPresent()) {
-            ProductStock productStock = existingProductOptional.get();
-            productStockDTO.setId(productStock.getId());
-            productStockDTO.setEmployeeId(productStock.getEmployeeId());
-            productStockDTO.setProductName(productStock.getProductName().toUpperCase());
-            productStockDTO.setLoadedDate(productStock.getLoadedDate());
-            productStockDTO.setBalanceQuantity(productStock.getBalanceQuantity());
-            productStockDTO.setLoadedQuantity(productStock.getLoadedQuantity());
-            return ResponseEntity.status(HttpStatus.OK).body(productStockDTO);
+        if (!existingProductList.isEmpty()) {
+            List<String> csvFileLinks = Collections.singletonList(csvGenerator.generateProductStockCSV(existingProductList));
+
+            // Handle multiple CSV file links if needed
+            // List<String> csvFileLinks = existingProductList.stream()
+            //         .map(productStock -> csvGenerator.generateProductStockCSV(productStock))
+            //         .collect(Collectors.toList());
+
+            List<ProductStockDTO> productDetailsResponseList = existingProductList.stream()
+                    .map(productStock -> new ProductStockDTO(
+                            productStock.getId(),
+                            productStock.getEmployeeId(),
+                            productStock.getProductName().toUpperCase(),
+                            productStock.getLoadedDate(),
+                            productStock.getBalanceQuantity(),
+                            productStock.getLoadedQuantity()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(HttpStatus.OK).body(productDetailsResponseList);
         } else {
-            throw new ProductNotFoundException("No details found for the provided id: " + id);
-
+            throw new ProductNotFoundException("No details found for the provided id: " + employeeId);
         }
     }
 
@@ -74,6 +90,29 @@ public class ProductStockService {
         } catch (Exception e) {
             logger.error("Error Occurred while adding stock details: " + e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Occurred while adding stock details");
+        }
+    }
+    public ResponseEntity<?> getProductStockByDateService(Date fromDate) {
+        LocalDateTime fromDateTime = fromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        List<ProductStock> existingProductList = productStockRepo.findByLoadedDateAfter(fromDateTime);
+
+        if (!existingProductList.isEmpty()) {
+            CSVGenerator csvGenerator = new CSVGenerator();
+            List<String> csvFileLinks = Collections.singletonList(csvGenerator.generateProductStockCSV(existingProductList));
+
+            List<ProductStockDTO> productDetailsResponseList = existingProductList.stream()
+                    .map(productStock -> new ProductStockDTO(
+                            productStock.getId(),
+                            productStock.getEmployeeId(),
+                            productStock.getProductName().toUpperCase(),
+                            productStock.getLoadedDate(),
+                            productStock.getBalanceQuantity(),
+                            productStock.getLoadedQuantity()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(HttpStatus.OK).body(productDetailsResponseList);
+        } else {
+            throw new ProductNotFoundException("No details found for the provided fromDate: " + fromDate);
         }
     }
 }

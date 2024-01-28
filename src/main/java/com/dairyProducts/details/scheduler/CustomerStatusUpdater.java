@@ -22,10 +22,8 @@ public class CustomerStatusUpdater {
     private static final Logger logger = LoggerFactory.getLogger(CustomerStatusUpdater.class);
     @Autowired
     CustomerRepository customerRepo;
-
     @Autowired
     ProductRepository productRepo;
-
 
     @Scheduled(cron = "0 0 0 1 * ?") // Runs at midnight on the 1st day of every month
     public void updateCustomerStatus() {

@@ -19,7 +19,13 @@ public class ProductStockDTO {
 
     private double balanceQuantity;
 
-    public ProductStockDTO() {
+    public ProductStockDTO(int id, String employeeId, String productName, LocalDateTime loadedDate, double loadedQuantity, double balanceQuantity) {
+        this.id = id;
+        this.employeeId = employeeId;
+        this.productName = productName;
+        this.loadedDate = loadedDate;
+        this.loadedQuantity = loadedQuantity;
+        this.balanceQuantity = balanceQuantity;
     }
 
     public int getId() {

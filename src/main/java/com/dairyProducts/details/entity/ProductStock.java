@@ -18,6 +18,7 @@ public class ProductStock {
     @Column(name = "product_name")
     private String productName;
     @Column(name = "loaded_date")
+    @Temporal(TemporalType.TIMESTAMP)
     @CreationTimestamp
     private LocalDateTime loadedDate;
     @Column(name = "loaded_quantity")
