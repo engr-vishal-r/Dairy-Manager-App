@@ -36,15 +36,4 @@ public class ProductStockController {
         return productStockService.getProductStockByDateService(fromDate);
     }
 
-//    @PutMapping(value = "/{id}")
-//    public ResponseEntity<String> updateMilkDetails(@PathVariable int id, @RequestBody ProductStockDTO productStockDTO) {
-//        return productStockService.updateProductStockDetailsService(productStockDTO);
-//
-//    }
-//
-//    @DeleteMapping(value = "/{id}")
-//    public ResponseEntity<String> deleteMilkDetails(@PathVariable int id) {
-//
-//        return productStockService.deleteProductStockDetailsService(id);
-//    }
 }
