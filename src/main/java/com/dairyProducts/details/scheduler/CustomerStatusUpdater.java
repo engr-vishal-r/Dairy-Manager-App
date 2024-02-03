@@ -66,4 +66,3 @@ public class CustomerStatusUpdater {
         return UUID.randomUUID().toString();
     }
 }
-

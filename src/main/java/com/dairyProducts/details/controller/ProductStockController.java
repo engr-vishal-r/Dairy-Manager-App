@@ -18,22 +18,17 @@ public class ProductStockController {
     private ProductStockRepository productStockRepo;
     @Autowired
     private ProductStockService productStockService;
-
     private ProductStockDTO productStockDTO;
-
     @PostMapping(value = "/add")
     public ResponseEntity<String> addProductStock(@RequestBody ProductStockDTO productStockDTO) {
         return productStockService.addProductStockDetailsService(productStockDTO);
     }
-
     @GetMapping(value = "/{employeeId}")
     public ResponseEntity<?> getProductStockDetails(@PathVariable String employeeId) {
         return productStockService.getProductStockDetailsService(employeeId);
     }
-
     @RequestMapping(value="/fetch" , method=RequestMethod.GET)
     public @ResponseBody ResponseEntity<?> fetchResult(@RequestParam("from") @DateTimeFormat(pattern="yyyy-MM-dd") Date fromDate) {
         return productStockService.getProductStockByDateService(fromDate);
     }
-
 }
