@@ -3,7 +3,6 @@ package com.dairyProducts.details.service;
 
 import com.dairyProducts.details.dto.CustomerDTO;
 import com.dairyProducts.details.entity.Customer;
-import com.dairyProducts.details.entity.Product;
 import com.dairyProducts.details.repository.CustomerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
