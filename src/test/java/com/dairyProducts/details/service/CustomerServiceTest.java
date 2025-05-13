@@ -65,6 +65,42 @@ class CustomerServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertTrue(response.getBody().contains("already exist"));
     }
+    @Test
+    void testAddCustomer_MissingCustomerName() {
+        customerDTO.setCustomerName("");  // Simulate missing name
+
+        ResponseEntity<String> response = customerService.addCustomerDetailsService(customerDTO);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Customer Name/ mobile no. is mandatory"));
+    }
+    @Test
+    void testAddCustomer_InvalidMobileNumber() {
+        customerDTO.setMobileNo(123L);  // Not 10 digits
+        ResponseEntity<String> response = customerService.addCustomerDetailsService(customerDTO);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Mobile no. should be 10 digits"));
+    }
+    @Test
+    void testAddCustomer_InternalServerError() {
+        when(customerRepo.findByMobileNo(anyLong())).thenReturn(Optional.empty());
+        when(customerRepo.findByCustomerName(anyString())).thenReturn(Optional.empty());
+
+        // Force customerRepo.save to throw a RuntimeException
+        when(customerRepo.save(any(Customer.class))).thenThrow(new RuntimeException("Database error"));
+
+        ResponseEntity<String> response = customerService.addCustomerDetailsService(customerDTO);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertTrue(response.getBody().contains("Error Occurred while adding customer details"));
+    }
+    @Test
+    void testAddCustomer_InvalidAreaCode() {
+        customerDTO.setArea(123);  // Not 6 digits
+        ResponseEntity<String> response = customerService.addCustomerDetailsService(customerDTO);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().contains("Area code should be 6 digits"));
+    }
 
     @Test
     void testGetCustomerDetails_Found() {
@@ -161,26 +197,6 @@ class CustomerServiceTest {
 
         ResponseEntity<String> response = customerService.deleteCustomerDetailsService(123456L);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-    @Test
-    void testAddCustomer_InvalidMobileNumber() {
-        customerDTO.setMobileNo(123L);  // Not 10 digits
-        ResponseEntity<String> response = customerService.addCustomerDetailsService(customerDTO);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().contains("Mobile no. should be 10 digits"));
-    }
-    @Test
-    void testAddCustomer_InternalServerError() {
-        when(customerRepo.findByMobileNo(anyLong())).thenReturn(Optional.empty());
-        when(customerRepo.findByCustomerName(anyString())).thenReturn(Optional.empty());
-
-        // Force customerRepo.save to throw a RuntimeException
-        when(customerRepo.save(any(Customer.class))).thenThrow(new RuntimeException("Database error"));
-
-        ResponseEntity<String> response = customerService.addCustomerDetailsService(customerDTO);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertTrue(response.getBody().contains("Error Occurred while adding customer details"));
     }
 
 }
