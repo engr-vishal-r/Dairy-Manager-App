@@ -14,7 +14,7 @@ public interface ProductStockRepository extends JpaRepository<ProductStock, Inte
 
     List<ProductStock> findByEmployeeId(String employeeId);
 
-    ProductStock findTopByOrderByLoadedDateDesc();
+    Optional<ProductStock> findTopByProductNameIgnoreCaseOrderByLoadedDateDesc(String productName);
 
     @Query("SELECT p FROM ProductStock p WHERE p.loadedDate >= :fromDate")
     List<ProductStock> findByLoadedDateAfter(LocalDateTime fromDate);

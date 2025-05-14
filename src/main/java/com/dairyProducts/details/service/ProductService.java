@@ -13,7 +13,6 @@ import com.dairyProducts.details.repository.ProductStockRepository;
 import com.dairyProducts.details.utility.CSVGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,24 +29,26 @@ public class ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
-    @Autowired
-    private ProductRepository productRepo;
-    @Autowired
-    private ProductStockRepository productStockRepo;
-    @Autowired
-    private CustomerRepository customerRepo;
+    private final ProductRepository productRepo;
+    private final CustomerRepository customerRepo;
+    private final ProductStockRepository productStockRepo;
+    private final CSVGenerator csvGenerator;
 
-    public ProductService(ProductRepository productRepo) {
+    public ProductService(ProductRepository productRepo,
+                          ProductStockRepository productStockRepo,
+                          CustomerRepository customerRepo,
+                          CSVGenerator csvGenerator) {
         this.productRepo = productRepo;
+        this.productStockRepo = productStockRepo;
+        this.customerRepo = customerRepo;
+        this.csvGenerator = csvGenerator;
     }
-
     public ResponseEntity<?> getProductDetailsService(long cardNumber) {
-
-        CSVGenerator csvGenerator = new CSVGenerator();
         List<Product> productList = productRepo.findByCustomerCardNumber(cardNumber);
 
         if (productList.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for cardNumber: " + cardNumber);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No details found for cardNumber: " + cardNumber);
         } else {
             double totalPendingAmount = productList.stream()
                     .filter(product -> Constants.PAID_NO.equalsIgnoreCase(product.getPaid()))
@@ -58,10 +59,13 @@ public class ProductService {
                     .orElseThrow(() -> new RuntimeException("Customer not found for cardNumber: " + cardNumber));
 
             customer.setPendingAmount(totalPendingAmount);
-            customer.setDefaulter(customer.getPendingAmount() >= Constants.DEFAULT_PENDING_THRESHOLD ? Constants.PAID_YES : Constants.PAID_NO);
+            customer.setDefaulter(customer.getPendingAmount() >= Constants.DEFAULT_PENDING_THRESHOLD
+                    ? Constants.PAID_YES
+                    : Constants.PAID_NO);
             customerRepo.save(customer);
 
-            // Pass the entire productList to the CSVGenerator
+
+            logger.info("About to call generateCSV for customer: " + customer.getCustomerName());
             List<String> csvFileLinks = Collections.singletonList(csvGenerator.generateCSV(customer, productList));
 
             ProductWithCustomerDTO productDetailsResponse = new ProductWithCustomerDTO(
@@ -112,6 +116,7 @@ public class ProductService {
             product.setCustomer(existingCustomer);
             try {
                 product.setProductName(ProductType.fromName(productDTO.getProductName()).name());
+                System.out.println("Product name  -" + ProductType.fromName(productDTO.getProductName()).name());
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("Invalid product name: " + productDTO.getProductName());
@@ -124,7 +129,7 @@ public class ProductService {
 
             // Check if there is sufficient balance quantity in the product stock
             double purchasedQuantity = productDTO.getQuantity();
-            double remainingBalanceQuantity = updateProductStockBalanceQuantity(purchasedQuantity);
+            double remainingBalanceQuantity = updateProductStockBalanceQuantity(productDTO.getProductName(), purchasedQuantity);
 
             if (remainingBalanceQuantity < 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product stock is not available");
@@ -186,7 +191,9 @@ public class ProductService {
 
             if (productDTO.getCustomer() != null) {
                 existingProduct.setCustomer(productDTO.getCustomer());
-            } else if (productDTO.getPaid() != null && Constants.PAID_YES.equalsIgnoreCase(productDTO.getPaid()) || Constants.PAID_NO.equalsIgnoreCase(productDTO.getPaid())) {
+            } else if (productDTO.getPaid() != null &&
+                    (Constants.PAID_YES.equalsIgnoreCase(productDTO.getPaid()) ||
+                            Constants.PAID_NO.equalsIgnoreCase(productDTO.getPaid()))) {
                 existingProduct.setPaid(productDTO.getPaid());
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer details or paid status is mandatory for updating details.");
@@ -196,7 +203,6 @@ public class ProductService {
             productRepo.save(existingProduct);
 
             logger.info("Received customer update request : " + productDTO);
-
             System.out.println("Product details updated successfully.");
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully updated in the database " + productDTO);
         } else {
@@ -221,24 +227,30 @@ public class ProductService {
         }
     }
 
-    private double updateProductStockBalanceQuantity(double purchasedQuantity) {
-        ProductStock productStock = productStockRepo.findTopByOrderByLoadedDateDesc();
+    private double updateProductStockBalanceQuantity(String productName, double purchasedQuantity) {
 
-        if (productStock != null) {
+        Optional<ProductStock> stockOptional = productStockRepo.findTopByProductNameIgnoreCaseOrderByLoadedDateDesc(productName);
+        System.out.println(">> Searching for product: " + productName);
+        productStockRepo.findAll().forEach(stock ->
+                System.out.println(">> DB has: " + stock.getProductName() + " | Qty: " + stock.getBalanceQuantity())
+        );
+        if (stockOptional.isPresent()) {
+            ProductStock productStock = stockOptional.get();
+            System.out.println("Found stock: " + productStock.getProductName() + " | Available: " + productStock.getBalanceQuantity() + " | Requested: " + purchasedQuantity);
             double remainingBalanceQuantity = productStock.getBalanceQuantity() - purchasedQuantity;
 
-            // Check if there is sufficient balance quantity
             if (remainingBalanceQuantity >= 0) {
                 productStock.setBalanceQuantity(remainingBalanceQuantity);
                 productStockRepo.save(productStock);
                 return remainingBalanceQuantity;
             } else {
-                return -0.1; // Indicates insufficient balance quantity
+                return -0.1; // Insufficient stock
             }
         } else {
-            return -0.1; // Handle the case where there is no ProductStock record
+            return -0.1; // No stock found for product
         }
     }
+
 
     private double getDefaultUnitPrice(String productName) {
         try {

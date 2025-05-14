@@ -6,12 +6,14 @@ import com.dairyProducts.details.entity.ProductStock;
 import com.opencsv.CSVWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
 
+@Component
 public class CSVGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(CSVGenerator.class);
@@ -20,7 +22,7 @@ public class CSVGenerator {
         logger.info("Received data to generate csv file" + "  " + "for the customer CardNumber -> " + customer.getCardNumber());
 
         String fileName = customer.getCardNumber()+"_"+ LocalDate.now() + ".csv";
-        String filePath = "D:\\Users\\vishal\\eclipse-workspace\\dairyProduct\\src\\main\\resources\\csv\\" + fileName;
+        String filePath = "E:\\Users\\vishal\\dairyProduct\\src\\main\\resources\\csv\\" + fileName;
 
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writeRow(writer, "", "","", "LVS EXPORTS", " ", "");
@@ -56,7 +58,7 @@ public class CSVGenerator {
         logger.info("Received request to generate product stock CSV report -> ");
 
         String fileName = "ProductStock_" + LocalDate.now() + ".csv";
-        String filePath = "D:\\Users\\vishal\\eclipse-workspace\\dairyProduct\\src\\main\\resources\\csv\\" + fileName;
+        String filePath = "E:\\Users\\vishal\\dairyProduct\\src\\main\\resources\\csv\\" + fileName;
 
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             writeRow(writer, "", "","", "LVS EXPORTS", " ", "");

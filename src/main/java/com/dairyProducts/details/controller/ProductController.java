@@ -18,28 +18,28 @@ public class ProductController {
 
 
     @PostMapping(value = "/{cardNumber}")
-    public ResponseEntity<String> addProduct(@PathVariable long cardNumber, @RequestBody ProductDTO productDTO, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
+    public ResponseEntity<String> addProduct(@PathVariable long cardNumber, @RequestBody ProductDTO productDTO, @RequestHeader(name = "correlation_id", required = true) String correlationId) {
         logger.info("Received request to add product details" + " -> " + correlationId);
 
         return productService.addProductDetailsService(cardNumber, productDTO);
     }
 
     @GetMapping(value = "/{cardNumber}")
-    public ResponseEntity<?> getProductDetails(@PathVariable long cardNumber, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
+    public ResponseEntity<?> getProductDetails(@PathVariable long cardNumber, @RequestHeader(name = "correlation_id", required = true) String correlationId) {
         logger.info("Received request to get product details" + " -> " + correlationId);
         return productService.getProductDetailsService(cardNumber);
     }
 
 
     @PutMapping(value = "/{cardNumber}")
-    public ResponseEntity<String> updateProductDetails(@PathVariable long cardNumber, @RequestBody ProductDTO productDTO, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
+    public ResponseEntity<String> updateProductDetails(@PathVariable long cardNumber, @RequestBody ProductDTO productDTO, @RequestHeader(name = "correlation_id", required = true) String correlationId) {
         logger.info("Received request to update product details" + " -> " + correlationId);
         return productService.updateProductDetailsService(productDTO);
 
     }
 
     @DeleteMapping(value = "/{id}")
-    public ResponseEntity<String> deleteProductDetails(@PathVariable String id, @RequestHeader(name = "correlation_id", required = false) String correlationId) {
+    public ResponseEntity<String> deleteProductDetails(@PathVariable String id, @RequestHeader(name = "correlation_id", required = true) String correlationId) {
         logger.info("Received request to delete product details" + " -> " + correlationId);
         return productService.deleteProductDetailsService(id);
     }

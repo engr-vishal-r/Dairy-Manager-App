@@ -2,8 +2,8 @@ package com.dairyProducts.details.service;
 
 
 import com.dairyProducts.details.dto.ProductStockDTO;
-import com.dairyProducts.details.dto.ProductWithCustomerDTO;
 import com.dairyProducts.details.entity.ProductStock;
+import com.dairyProducts.details.enums.ProductType;
 import com.dairyProducts.details.handler.ProductNotFoundException;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.repository.ProductStockRepository;
@@ -16,11 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,29 +69,45 @@ public class ProductStockService {
     @Transactional
     public ResponseEntity<String> addProductStockDetailsService(ProductStockDTO productStockDTO) {
         try {
-            ProductStock productStock = new ProductStock();
-            productStock.setLoadedQuantity(productStockDTO.getLoadedQuantity());
-            productStock.setEmployeeId(productStockDTO.getEmployeeId());
-            productStock.setProductName(productStockDTO.getProductName().toUpperCase());
-            productStock.setBalanceQuantity(productStockDTO.getLoadedQuantity());
-            String quantity = Integer.toString((int) productStockDTO.getLoadedQuantity());
-
-            if (productStockDTO.getEmployeeId().isEmpty() || !productStockDTO.getEmployeeId().matches("[0-9]{6}")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Employee id is mandatory & please check 6 digit employee id to add details");
-            } else if (productStockDTO.getLoadedQuantity() == 0 || !quantity.matches("[0-9]+([.][0-9]+)?")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Quantity is mandatory and it should be in numeric to add details");
-            } else if (productStockDTO.getProductName().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Product Name is mandatory to add details");
-            } else {
-                productStockRepo.save(productStock);
-                return ResponseEntity.status(HttpStatus.OK).body("Stock Details successfully added in the database " + "Please save the reference id for future for purpose -> " + productStockDTO.getId());
+            // Validate Employee ID
+            if (productStockDTO.getEmployeeId() == null || !productStockDTO.getEmployeeId().matches("[0-9]{6}")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Employee ID is mandatory & should be a 6-digit number.");
             }
 
+            // Validate Quantity
+            if (productStockDTO.getLoadedQuantity() <= 0) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Quantity is mandatory and must be a positive number.");
+            }
+
+            // Validate Product Name
+            ProductType productType;
+            try {
+                productType = ProductType.fromName(productStockDTO.getProductName());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Invalid product name. Accepted values: MILK, CURD, GHEE, SUGAR.");
+            }
+
+            // Create and save ProductStock
+            ProductStock productStock = new ProductStock();
+            productStock.setEmployeeId(productStockDTO.getEmployeeId());
+            productStock.setLoadedQuantity(productStockDTO.getLoadedQuantity());
+            productStock.setBalanceQuantity(productStockDTO.getLoadedQuantity());
+            productStock.setProductName(productType.name()); // Use normalized enum name
+
+            productStockRepo.save(productStock);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body("Stock details successfully added. Reference ID: " + productStock.getId());
+
         } catch (Exception e) {
-            logger.error("Error Occurred while adding stock details: " + e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error Occurred while adding stock details");
+            logger.error("Error occurred while adding stock details: " + e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error occurred while adding stock details");
         }
     }
+
     public ResponseEntity<?> getProductStockByDateService(Date fromDate) {
         LocalDateTime fromDateTime = fromDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
         List<ProductStock> existingProductList = productStockRepo.findByLoadedDateAfter(fromDateTime);

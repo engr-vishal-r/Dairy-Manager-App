@@ -67,6 +67,7 @@ public class ProductWithCustomerDTO {
                 ", pendingAmount=" + pendingAmount +
                 ", cardNumber=" + cardNumber +
                 ", customerName='" + customerName + '\'' +
+                ", csvFileLink=" + csvFileLink +
                 '}';
     }
 }
