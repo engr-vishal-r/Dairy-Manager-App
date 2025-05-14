@@ -1,10 +1,12 @@
 package com.dairyProducts.details.service;
 
+import com.dairyProducts.details.constants.Constants;
 import com.dairyProducts.details.dto.ProductDTO;
 import com.dairyProducts.details.dto.ProductWithCustomerDTO;
 import com.dairyProducts.details.entity.Customer;
 import com.dairyProducts.details.entity.Product;
 import com.dairyProducts.details.entity.ProductStock;
+import com.dairyProducts.details.enums.ProductType;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.repository.ProductRepository;
 import com.dairyProducts.details.repository.ProductStockRepository;
@@ -18,7 +20,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductService {
@@ -26,7 +30,6 @@ public class ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);
 
-    private ProductDTO productDTO;
     @Autowired
     private ProductRepository productRepo;
     @Autowired
@@ -47,7 +50,7 @@ public class ProductService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No details found for cardNumber: " + cardNumber);
         } else {
             double totalPendingAmount = productList.stream()
-                    .filter(product -> "N".equalsIgnoreCase(product.getPaid()))
+                    .filter(product -> Constants.PAID_NO.equalsIgnoreCase(product.getPaid()))
                     .mapToDouble(product -> product.getQuantity() * product.getUnitPrice())
                     .sum();
 
@@ -55,7 +58,7 @@ public class ProductService {
                     .orElseThrow(() -> new RuntimeException("Customer not found for cardNumber: " + cardNumber));
 
             customer.setPendingAmount(totalPendingAmount);
-            customer.setDefaulter(customer.getPendingAmount() >= 10000 ? "Y" : "N");
+            customer.setDefaulter(customer.getPendingAmount() >= Constants.DEFAULT_PENDING_THRESHOLD ? Constants.PAID_YES : Constants.PAID_NO);
             customerRepo.save(customer);
 
             // Pass the entire productList to the CSVGenerator
@@ -93,10 +96,11 @@ public class ProductService {
         Customer existingCustomer = existingCustomerOptional.get();
 
         // Check the eligibility to purchase product
-        if (existingCustomer.getDefaulter().equals("Y") &&
-                (existingCustomer.getStatus().equals("CANCELLED") || existingCustomer.getStatus().equals("INACTIVE"))) {
+        if (Constants.PAID_YES.equals(customer.getDefaulter()) &&
+                (Constants.STATUS_CANCELLED.equals(customer.getStatus()) ||
+                        Constants.STATUS_INACTIVE.equals(customer.getStatus()))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Customer has pending dues: " + existingCustomer.getPendingAmount() +
+                    .body("Customer has pending dues: " + customer.getPendingAmount() +
                             " (OR) Customer account is in CANCELLED or INACTIVE state");
         } else if (productDTO.getQuantity() == 0 || productDTO.getProductName().isBlank()) {
             // Check if quantity and productName are provided
@@ -106,7 +110,12 @@ public class ProductService {
             Product product = new Product();
             product.setQuantity(productDTO.getQuantity());
             product.setCustomer(existingCustomer);
-            product.setProductName(productDTO.getProductName().toUpperCase());
+            try {
+                product.setProductName(ProductType.fromName(productDTO.getProductName()).name());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("Invalid product name: " + productDTO.getProductName());
+            }
 
             // Calculate total price
             product.setUnitPrice(getDefaultUnitPrice(productDTO.getProductName()));
@@ -131,7 +140,7 @@ public class ProductService {
 
             // Update customer table with pending amount details
             existingCustomer.setPendingAmount(existingCustomer.getPendingAmount() + totalPrice);
-            existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= 10000 ? "Y" : "N");
+            existingCustomer.setDefaulter(existingCustomer.getPendingAmount() >= Constants.DEFAULT_PENDING_THRESHOLD ? Constants.PAID_YES : Constants.PAID_NO);
             customerRepo.save(existingCustomer);
 
             return ResponseEntity.status(HttpStatus.OK).body("Details successfully added in the database. Remaining Balance Quantity ->  " +
@@ -151,7 +160,7 @@ public class ProductService {
             Product existingProduct = existingProductOptional.get();
             double existingTotalAmount = existingProduct.getTotalPrice();
             // Update fields only if they are present in the DTO
-            if (productDTO.getQuantity() != 0) {
+            if (productDTO.getQuantity() > 0) {
                 existingProduct.setQuantity(productDTO.getQuantity());
                 existingProduct.setUnitPrice(getDefaultUnitPrice(productDTO.getProductName()));
                 double totalPrice = existingProduct.getUnitPrice() * existingProduct.getQuantity();
@@ -160,8 +169,8 @@ public class ProductService {
                 Optional<Customer> existingCustomerOptional = customerRepo.findByCardNumber(existingProduct.getCustomer().getCardNumber());
                 if (existingCustomerOptional.isPresent()) {
                     Customer existingCustomer = existingCustomerOptional.get();
-                    // Check if payment is marked as "Y"
-                    if (productDTO.getPaid() != null && productDTO.getPaid().equals("Y")) {
+                    // Check if payment is made already
+                    if (productDTO.getPaid() != null && Constants.PAID_YES.equalsIgnoreCase(productDTO.getPaid())) {
                         double newPendingAmountAfterPayment = existingCustomer.getPendingAmount() - existingTotalAmount;
                         existingCustomer.setPendingAmount(newPendingAmountAfterPayment);
                     } else {
@@ -177,7 +186,7 @@ public class ProductService {
 
             if (productDTO.getCustomer() != null) {
                 existingProduct.setCustomer(productDTO.getCustomer());
-            } else if (productDTO.getPaid() != null && (productDTO.getPaid().equals("Y") || productDTO.getPaid().equals("N"))) {
+            } else if (productDTO.getPaid() != null && Constants.PAID_YES.equalsIgnoreCase(productDTO.getPaid()) || Constants.PAID_NO.equalsIgnoreCase(productDTO.getPaid())) {
                 existingProduct.setPaid(productDTO.getPaid());
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Customer details or paid status is mandatory for updating details.");
@@ -232,17 +241,11 @@ public class ProductService {
     }
 
     private double getDefaultUnitPrice(String productName) {
-        switch (productName.toLowerCase()) {
-            case "milk":
-                return 50.0;
-            case "curd":
-                return 60.0;
-            case "ghee":
-                return 500.0;
-            case "sugar":
-                return 80.0;
-            default:
-                return 0.0; // Handle default case
+        try {
+            return ProductType.fromName(productName).getPrice();
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid product name provided: {}", productName);
+            return 0.0;
         }
     }
 }

@@ -12,6 +12,7 @@ The Dairy Manager App is a Java and Spring Boot-based backend application design
 - **Mockito** 
 - **JUnit 5 with MockMvc**
 - **MySQL Database** 
+- **H2 Database (for testing)**
 
 ---
 
@@ -24,7 +25,7 @@ The Dairy Manager App is a Java and Spring Boot-based backend application design
 - 🧪 Unit and service layer testing using Mockito & JUnit
 - 📦 Layered architecture (Controller, Service, Repository)
 - 🔄 JSON-based API responses
-- 📊 MySQL database for quick development/testing
+- 📊 MySQL database for quick development
 
 ---
 

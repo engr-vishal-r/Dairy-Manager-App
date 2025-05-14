@@ -133,7 +133,7 @@ class CustomerServiceTest {
         ResponseEntity<?> response = customerService.getCustomerDetailsService(123456L);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertTrue(response.getBody().toString().contains("Error Occurred while adding customer details"));
+        assertTrue(response.getBody().toString().contains("Error Occurred while getting customer details"));
     }
 
     @Test
