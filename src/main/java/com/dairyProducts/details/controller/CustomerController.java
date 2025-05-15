@@ -4,6 +4,8 @@ package com.dairyProducts.details.controller;
 import com.dairyProducts.details.dto.CustomerDTO;
 import com.dairyProducts.details.repository.CustomerRepository;
 import com.dairyProducts.details.service.CustomerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +36,8 @@ public class CustomerController {
         return customerService.addCustomerDetailsService(customerDTO);
 
     }
-
+    @Operation(summary = "Retrieve all customers")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved list")
     @GetMapping(value = "/{cardNumber}")
     public ResponseEntity<?> getCustomerDetails(@PathVariable long cardNumber) {
 
@@ -53,9 +56,6 @@ public class CustomerController {
         logger.info("Received request to delete customer" +" -> "+ correlationId);
         return customerService.deleteCustomerDetailsService(cardNumber);
     }
-//    private String generateCorrelationId() {
-//        return UUID.randomUUID().toString();
-//    }
 }
 
 

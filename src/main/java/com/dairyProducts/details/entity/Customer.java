@@ -158,7 +158,7 @@ public class Customer {
                 ", status='" + status + '\'' +
                 ", enrolledDate=" + enrolledDate +
                 ", updatedDate=" + updatedDate +
-                ", productList=" + productList +
+                ", productList=" + (productList != null ? productList.size() : 0) +
                 '}';
     }
 }

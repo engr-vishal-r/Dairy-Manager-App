@@ -119,7 +119,7 @@ public class ProductServiceTest {
         stock.setBalanceQuantity(10);
 
         when(customerRepo.findByCardNumber(cardNumber)).thenReturn(Optional.of(customer));
-        when(productStockRepo.findTopByOrderByLoadedDateDesc()).thenReturn(stock);
+        when(productStockRepo.findTopByProductNameIgnoreCaseOrderByLoadedDateDesc("MILK")).thenReturn(Optional.of(stock));
         when(productRepo.save(any(Product.class))).thenAnswer(invocation -> {
             Product p = invocation.getArgument(0);
             p.setId("123");
@@ -172,7 +172,7 @@ public class ProductServiceTest {
         stock.setBalanceQuantity(10);  // Not enough
 
         when(customerRepo.findByCardNumber(123L)).thenReturn(Optional.of(customer));
-        when(productStockRepo.findTopByOrderByLoadedDateDesc()).thenReturn(stock);
+        when(productStockRepo.findTopByProductNameIgnoreCaseOrderByLoadedDateDesc("MILK")).thenReturn(Optional.of(stock));
 
         ResponseEntity<String> response = productService.addProductDetailsService(123L, dto);
 

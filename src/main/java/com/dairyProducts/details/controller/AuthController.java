@@ -1,11 +1,14 @@
 package com.dairyProducts.details.controller;
 
 import com.dairyProducts.details.utility.JwtUtil;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
@@ -21,10 +24,10 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
         this.encoder = encoder;
 
-        // Now encoder is initialized, safe to use
+
         this.USERS = Map.of(
-                "user", encoder.encode("pass"),
-                "admin", encoder.encode("admin")
+                "user", "$2a$10$QE7bpDw3GMKDzFuqmfjU1uRXRQVTaE9jff.1tZDxNU2O79uT9kZTW",
+                "admin", "$2a$10$HGe4t58CD5Z7S/.gIqFYAe6hHcl3/jjX8o9JxS0nPXQW6FP6whM.K"
         );
     }
 
@@ -36,7 +39,7 @@ public class AuthController {
             String token = jwtUtil.generateToken(request.getUsername(), role);
             return Map.of("token", token);
         }
-        throw new RuntimeException("Invalid credentials");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
     }
 }
 
@@ -49,4 +52,10 @@ class AuthRequest {
     public void setUsername(String username) { this.username = username; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public static void main(String[] args) {
+        System.out.println(new BCryptPasswordEncoder().encode("pass"));
+        System.out.println(new BCryptPasswordEncoder().encode("admin"));
+    }
 }
+
